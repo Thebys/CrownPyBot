@@ -1,0 +1,4 @@
+requests
+google-auth
+google-cloud-texttospeech
+pygame
