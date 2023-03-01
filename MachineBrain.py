@@ -110,35 +110,44 @@ class MachineBrain:
         return cls.instance
 
     def getStatus(self):
-        return "\nMachine status \nEnergy level: {0}\nStress level: {1}\nEmotion: {2}\n".format(self.energy_level.name, self.stress_level.name, self.emotion.value)
+        return "\nMachine status: energy {0}, Stress {1}, Emotion: {2}\n".format(self.energy_level.name, self.stress_level.name, self.emotion.value)
 
-    def setEmotion(self, emotion_to_set=None):
-        if emotion_to_set is None:
-            self.emotion = random.choice(list(Emotion))
-        elif emotion_to_set in Emotion:
-            self.emotion = emotion_to_set
-        else:
-            self.emotion = random(list(Emotion))
+    def crown_play_audio(self, File_name):
+        self.play_audio_file("media/Crown Intro.wav")
+        self.play_audio_file(f"{config.AUDIO_CACHE_FOLDER}/{File_name}")
 
-    def setContext(self, context):
-        if isinstance(context, int):
-            self.context = MachineBrain.Context(context)
-        elif isinstance(context, str):
-            self.context = context
-        else:
-            logging.error("Machine Brain - setContext - Invalid context value")
-
-    def play_audio_file(self, file_name):
+    def play_audio_file(self, file):
         pygame.mixer.init()
-        pygame.mixer.music.set_volume(0.7)
-        pygame.mixer.music.load(config.AUDIO_CACHE_FOLDER + "/" + file_name)
+        pygame.mixer.music.load(file)
         pygame.mixer.music.play()
         while pygame.mixer.music.get_busy():
             time.sleep(1)
-        logging.debug("Playing sound finished.")
+        logging.debug(f"Finished playing sound: {file}")
 
-    def vocalize(self):
-        #Program - machine status - setting - context - prompt:
+    def shuffle(self):
+        self.energy_level = random.choice(list(EnergyLevel))
+        self.stress_level = random.choice(list(StressLevel))
+        self.setting = random.choice(list(Setting))
+        self.emotion = random.choice(list(Emotion))
+        self.context = random.choice(list(Context))
+        logging.debug("Machine Brain shuffled.")
+
+    def vocalizeFromCache(self):
+        cache_line = cache.select_random_text(config.DATABASE_FILE)
+        file_name = cache.text_to_hash(cache_line)+".wav"
+        logging.debug("Vocalizing file {0} from cache with text: {1}.".format(
+            file_name, cache_line))
+        file_path = "{0}/{1}".format(config.AUDIO_CACHE_FOLDER, file_name)
+        if os.path.exists(file_path):
+            logging.debug(f"Cache hit! The file {file_path} exists.")
+        else:
+            logging.error(
+                f"Cache miss! Database file likely corrupted. The file {file_path} doesn't exists.")
+
+        self.crown_play_audio(file_name)
+
+    def vocalizeNew(self):
+        # Program - machine status - setting - context - prompt:
         prompt_input = f"{config.OPENAI_PROMPT_PROGRAM}{self.getStatus()}Setting: {self.setting.value}\nContext: {self.context.value}\nIt says: "
         newline = openai.crown_generate_text(prompt_input, 50)
 
@@ -151,13 +160,14 @@ class MachineBrain:
             logging.warn(f"Cache miss! The file {file_path} doesn't exists.")
             googletts.download_audio(newline)
 
-        self.play_audio_file(file_name)
-        time.sleep(30)
+        self.crown_play_audio(file_name)
 
-    def __init__(self, energy_level=EnergyLevel.NORMAL, stress_level=StressLevel.NEUTRAL, emotion=None, setting=Setting.HOME_LAB):
-        self.energy_level = energy_level
-        self.stress_level = stress_level
-        self.setting = setting
-        MachineBrain.setEmotion(self, emotion)
+    def __init__(self, Energy=EnergyLevel.NORMAL, Stress=StressLevel.NEUTRAL, Emotion=Emotion.Content, Setting=Setting.HOME_LAB):
+        pygame.mixer.init()
+        pygame.mixer.music.set_volume(0.7)
+        self.energy_level = Energy
+        self.stress_level = Stress
+        self.emotion = Emotion
+        self.setting = Setting
         self.context = Context.STARTING_UP
         logging.debug("Machine Brain initialized.")
