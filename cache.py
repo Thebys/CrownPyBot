@@ -1,9 +1,21 @@
 import hashlib
 import json
+import random
 
 def text_to_hash(text):
     hash = hashlib.sha256(text.encode()).hexdigest()
     return hash[:29]
+
+def select_random_text(database_file):
+    # Read the data from the database file
+    with open(database_file, "r") as f:
+        data = json.load(f)
+
+    # Select a random text line
+    random_index = random.randint(0, len(data) - 1)
+    random_text = data[random_index]["text"]
+
+    return random_text
 
 def create_entry(database_file, text):
     # Generate hash of text
