@@ -118,7 +118,7 @@ class MachineBrain:
 
     def play_audio_file(self, file):
         pygame.mixer.init()
-        pygame.mixer.music.load(file)
+        pygame.mixer.music.load(file.resolve())
         pygame.mixer.music.play()
         while pygame.mixer.music.get_busy():
             time.sleep(1)
