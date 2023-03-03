@@ -1,6 +1,7 @@
 import logging
 import random
 import time
+import config
 from MachineBrain import MachineBrain
 
 def setup():
@@ -14,7 +15,7 @@ def loop():
     while (True):
         CrownBotBrain = MachineBrain.instance
         scenario = random.randint(0, 9)
-        if (scenario == 1):
+        if (scenario > 1 and config.LEARNING):
             CrownBotBrain.vocalizeNew()
             time.sleep(30)
         else:
