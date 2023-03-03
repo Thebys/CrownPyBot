@@ -1,6 +1,7 @@
 import hashlib
 import json
 import random
+from pathlib import Path
 
 def text_to_hash(text):
     hash = hashlib.sha256(text.encode()).hexdigest()
@@ -8,7 +9,7 @@ def text_to_hash(text):
 
 def select_random_text(database_file):
     # Read the data from the database file
-    with open(database_file, "r") as f:
+    with open(Path(database_file), "r") as f:
         data = json.load(f)
 
     # Select a random text line
@@ -23,7 +24,7 @@ def create_entry(database_file, text):
 
     # Read current data from database file
     try:
-        with open(database_file, "r") as f:
+        with open(Path(database_file), "r") as f:
             data = json.load(f)
     except:
         data = []
@@ -45,7 +46,7 @@ def create_entry(database_file, text):
     data.append(entry)
 
     # Write updated data to database file
-    with open(database_file, "w") as f:
+    with open(Path(database_file), "w") as f:
         json.dump(data, f)
 
     return entry
@@ -53,7 +54,7 @@ def create_entry(database_file, text):
 def get_or_create_entry(database_file, text):
     # Read current data from database file
     try:
-        with open(database_file, "r") as f:
+        with open(Path(database_file), "r") as f:
             data = json.load(f)
     except:
         data = []
