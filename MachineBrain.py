@@ -116,9 +116,11 @@ class MachineBrain:
         self.play_audio_file(Path("media/Crown Intro.wav"))
         self.play_audio_file(Path(config.AUDIO_CACHE_FOLDER, File_name))
 
-    def play_audio_file(self, file):
+    def play_audio_file(self, fileToPlay):
+        file = fileToPlay.resolve()
+        logging.debug(f"Will atempt to play audio file {file}")
         pygame.mixer.init()
-        pygame.mixer.music.load(file.resolve())
+        pygame.mixer.music.load(file)
         pygame.mixer.music.play()
         while pygame.mixer.music.get_busy():
             time.sleep(1)
