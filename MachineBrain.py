@@ -133,7 +133,7 @@ class MachineBrain:
         logging.debug("Machine Brain shuffled.")
 
     def vocalizeFromCache(self):
-        cache_line = cache.select_random_text(config.DATABASE_FILE)
+        cache_line = cache.select_random_text(Path(config.DATABASE_FILE))
         file_name = cache.text_to_hash(cache_line)+".wav"
         logging.debug("Vocalizing file {0} from cache with text: {1}.".format(
             file_name, cache_line))
@@ -153,7 +153,7 @@ class MachineBrain:
 
         file_name = cache.text_to_hash(newline)+".wav"
         file_path = Path(config.AUDIO_CACHE_FOLDER, file_name)
-        cache.get_or_create_entry(config.DATABASE_FILE, newline)
+        cache.get_or_create_entry(Path(config.DATABASE_FILE), newline)
         if file_path.is_file():
             logging.debug(f"Cache hit! The file {file_path} exists.")
         else:
