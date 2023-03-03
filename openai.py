@@ -26,7 +26,7 @@ def crown_generate_text(Prompt_Input, Max_Tokens = 20):
     )
     if response.status_code == 200:
         response_json = response.json()
-        response_newtextline = response_json["choices"][0]["text"].strip().replace("'","").replace('"',"")
+        response_newtextline = response_json["choices"][0]["text"].strip()
         logging.debug("AI request response::\{0}".format(response_newtextline))
         return response_newtextline
     else:

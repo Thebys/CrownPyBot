@@ -1,4 +1,5 @@
 from enum import Enum
+from pathlib import Path
 import random
 import logging
 import config
@@ -6,7 +7,6 @@ import pygame
 import cache
 import openai
 import googletts
-import os
 import time
 
 
@@ -113,8 +113,8 @@ class MachineBrain:
         return "\nMachine status: energy {0}, Stress {1}, Emotion: {2}\n".format(self.energy_level.name, self.stress_level.name, self.emotion.value)
 
     def crown_play_audio(self, File_name):
-        self.play_audio_file("media/Crown Intro.wav")
-        self.play_audio_file(f"{config.AUDIO_CACHE_FOLDER}/{File_name}")
+        self.play_audio_file(Path("media/Crown Intro.wav"))
+        self.play_audio_file(Path(config.AUDIO_CACHE_FOLDER, File_name))
 
     def play_audio_file(self, file):
         pygame.mixer.init()
@@ -137,8 +137,8 @@ class MachineBrain:
         file_name = cache.text_to_hash(cache_line)+".wav"
         logging.debug("Vocalizing file {0} from cache with text: {1}.".format(
             file_name, cache_line))
-        file_path = "{0}/{1}".format(config.AUDIO_CACHE_FOLDER, file_name)
-        if os.path.exists(file_path):
+        file_path = Path(config.AUDIO_CACHE_FOLDER, file_name)
+        if file_path.is_file():
             logging.debug(f"Cache hit! The file {file_path} exists.")
         else:
             logging.error(
@@ -152,9 +152,9 @@ class MachineBrain:
         newline = openai.crown_generate_text(prompt_input, 50)
 
         file_name = cache.text_to_hash(newline)+".wav"
-        file_path = "{0}/{1}".format(config.AUDIO_CACHE_FOLDER, file_name)
+        file_path = Path(config.AUDIO_CACHE_FOLDER, file_name)
         cache.get_or_create_entry(config.DATABASE_FILE, newline)
-        if os.path.exists(file_path):
+        if file_path.is_file():
             logging.debug(f"Cache hit! The file {file_path} exists.")
         else:
             logging.warn(f"Cache miss! The file {file_path} doesn't exists.")

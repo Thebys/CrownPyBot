@@ -3,7 +3,6 @@ import random
 import time
 from MachineBrain import MachineBrain
 
-
 def setup():
     logging.basicConfig(filename="CrownPiBot.log", level=logging.DEBUG)
     logging.getLogger().addHandler(logging.StreamHandler())
