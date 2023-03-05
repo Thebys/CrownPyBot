@@ -4,11 +4,12 @@ A talking machine project based on Raspberry Pi Zero W and OpenAI GPT-3 API.
 
 ## Requirements
 
-- Raspberry Pi Zero W
+- Raspberry Pi (Zero W or better)
+- Up to date Raspbian OS installed
 - Python 3
 - Git
 - An API key for OpenAI GPT-3 API
-- An API key for Google Text-to-Speech API
+- "Credentials" for Google Text-to-Speech API
 
 ## Setup
 
@@ -26,6 +27,9 @@ A talking machine project based on Raspberry Pi Zero W and OpenAI GPT-3 API.
 
     python main.py
 
-## License
+## Autostart
 
-This project is licensed under the [MIT License](LICENSE).
+## Optional
+
+- Check this guide if you have a need for BT audio: https://gist.github.com/actuino/9548329d1bba6663a63886067af5e4cb
+- Run the bot at system startup as a service: https://medium.com/@benmorel/creating-a-linux-service-with-systemd-611b5c8b91d6
