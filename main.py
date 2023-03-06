@@ -8,10 +8,9 @@ from MachineBrain import Setting
 from MachineBrain import MachineBrain
 
 
-def pause(seconds=random.randint(15, 30)):
-    pause = seconds
-    logging.debug(f"Sleep. See you in {pause} seconds.")
-    time.sleep(pause)
+def pause(seconds = 20):
+    logging.debug(f"Sleep. See you in {seconds} seconds.")
+    time.sleep(seconds)
 
 
 def setup():
@@ -30,20 +29,20 @@ def process_round():
     CrownBotBrain = MachineBrain.instance
     setting = CrownBotBrain.getSetting()
     if setting == Setting.STARTING_UP:
-        CrownBotBrain.play_intro_modem()
+        CrownBotBrain.play_crown_sound()
         CrownBotBrain.setting = Setting.IDLE
     elif setting == Setting.IDLE:
         bored = random.randint(0, 99)
-        if (bored > 88 and config.LEARNING):
+        if (bored > 20 and config.LEARNING):
             CrownBotBrain.vocalizeNew()
         else:
             CrownBotBrain.vocalizeFromCache()
-            CrownBotBrain.brain_shuffle()
-        pause()
+        CrownBotBrain.brain_shuffle()
+        pause(random.randint(10,60))    
     else:
         CrownBotBrain.vocalizeFromCache()
         CrownBotBrain.brain_shuffle()
-        pause()
+        pause(random.randint(10,60))
 
 
 def main():
