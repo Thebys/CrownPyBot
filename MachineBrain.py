@@ -1,5 +1,6 @@
 from enum import Enum
 from pathlib import Path
+import requests
 import random
 import logging
 import config
@@ -8,6 +9,7 @@ import cache
 import openai
 import googletts
 import time
+from datetime import datetime
 from events import EventQueue, EventTypes, Event
 
 # This set of classes is the brain of the machine. It is responsible for the machine's state and behavior.
@@ -105,6 +107,7 @@ class Set(Enum):
 
 
 class MachineBrain:
+    """The brain of the machine. It is responsible for the machine's state and behavior."""
     instance = None
     event_queue = None
 
@@ -195,19 +198,55 @@ class MachineBrain:
         cache.get_or_create_entry(text, self.getStatusObject(), event)
         self.vocalize_text_line(text)
 
+    def vocalize_current_time(self, event=None):
+        """Vocalize the current time."""
+        cd = datetime.now()
+        hours = cd.strftime("%H")
+        minutes = cd.strftime("%M")
+        self.vocalize_direct(
+            f"Current time is {hours} hours and {minutes} minutes.", event)
+
+    def check_connection_is_online(self):
+        """Check if the internet connection is online."""
+        try:
+            req = requests.head("https://google.com", timeout=5)
+            # HTTP errors are not raised by default, this statement does that
+            req.raise_for_status()
+            return True
+        except requests.HTTPError as e:
+            logging.warn(
+                f"CON - Checking internet connection failed, status code {e.response.status_code}")
+        except requests.ConnectionError:
+            logging.warn("CON - No internet connection available.")
+        self.stress_level = + 1
+        return False
+
     def startup(self):
         """Start the machine and set it to a default state."""
+        self.online = self.check_connection_is_online()
         self.energy_level = EnergyLevel.NORMAL
         self.stress_level = StressLevel.CALM
         self.emotion = Emotion.Nostalgic
         self.set = Set.CT2023
+        if self.online:
+            self.startup_online()
+        else:
+            self.startup_offline()
+
+    def startup_online(self):
+        self.play_crown_sound()
+        self.event_queue.add_event(Event(EventTypes.MACHINE_SLEEP, 10))
+
+    def startup_offline(self):
         self.play_crown_sound()
         self.event_queue.add_event(Event(
             EventTypes.DIRECT_SPEECH, "Hello, I am a vintage Crown gambling machine made by T H Bergmann in 1980."))
         self.event_queue.add_event(Event(EventTypes.MACHINE_SLEEP, 3))
         self.event_queue.add_event(Event(
             EventTypes.DIRECT_SPEECH, "I have been found, claimed and repaired by a mysterious hacker who saved me from 30 years stuck with a flat hoarder."))
-        self.event_queue.add_event(Event(EventTypes.MACHINE_SLEEP, 20))
+        self.event_queue.add_event(Event(EventTypes.MACHINE_SLEEP, 5))
+        self.event_queue.add_event(Event(EventTypes.SAY_TIME))
+        self.event_queue.add_event(Event(EventTypes.MACHINE_SLEEP, 10))
 
     def sleep(self, seconds=20):
         """Let the machine sleep for a given number of seconds."""
@@ -219,5 +258,5 @@ class MachineBrain:
         self.event_queue = EventQueue()
         self.event_queue.add_event(Event(EventTypes.MACHINE_STARTUP))
         pygame.mixer.init()
-        pygame.mixer.music.set_volume(0.7)
+        pygame.mixer.music.set_volume(0.5)
         logging.debug("Machine Brain initialized.")

@@ -44,14 +44,18 @@ def handle_event(event):
         CrownBotBrain.sleep(event.data)
     elif type == EventTypes.DIRECT_SPEECH:
         CrownBotBrain.vocalize_direct(event.data, event)
+    elif type == EventTypes.SAY_TIME:
+        CrownBotBrain.vocalize_current_time(event)
     elif type == EventTypes.MACHINE_IDLE:
         bored = random.randint(0, 99)
         if (config.LEARNING):
-            CrownBotBrain.vocalize_new(event)            
-        elif (bored > 60):
+            CrownBotBrain.vocalize_new(event)
+        elif (bored > 80):
+            CrownBotBrain.event_queue.add_event(Event(EventTypes.SAY_TIME))
+        elif (bored > 50):
             CrownBotBrain.vocalize_from_cache()
         CrownBotBrain.event_queue.add_event(
-                Event(EventTypes.MACHINE_SLEEP, random.randint(5, 20)))
+            Event(EventTypes.MACHINE_SLEEP, random.randint(5, 20)))
     else:
         logging.debug(f"Unknown event: {event}")
 

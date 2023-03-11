@@ -11,6 +11,7 @@ class EventTypes(Enum):
     MACHINE_ERROR = auto()
     MACHINE_IDLE = auto()
     DIRECT_SPEECH = auto()
+    SAY_TIME = auto()
     MACHINE_BORED = auto()
     MACHINE_ATTENTION_SEEKING = auto()
     INPUT_PIR_DETECTED = auto()
@@ -31,6 +32,8 @@ class EventTypes(Enum):
             return "The machine detects motion."
         elif self == EventTypes.DIRECT_SPEECH:
             return "The machine speaks."
+        elif self == EventTypes.SAY_TIME:
+            return "The machine says the current time."
         else:
             return "Unknown."
 

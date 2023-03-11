@@ -7,7 +7,7 @@ import config
 
 def crown_generate_text(Prompt_Input, Max_Tokens=20):
     """Return new text line from the AI model, based on the prompt input."""
-    logging.debug(f"AI request prompt: {Prompt_Input}")
+    logging.debug(f"AI - Prompt: {Prompt_Input}")
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {config.OPENAI_API_KEY}"
@@ -15,9 +15,9 @@ def crown_generate_text(Prompt_Input, Max_Tokens=20):
     data = {
         "prompt": Prompt_Input,
         "model": config.OPENAI_AI_MODEL,
-        "temperature": 0.5,
+        "temperature": 0.65,
         "max_tokens": Max_Tokens,
-        "top_p": 1,
+        "top_p": 0.8,
         "frequency_penalty": 0,
         "presence_penalty": 0
     }
@@ -29,7 +29,7 @@ def crown_generate_text(Prompt_Input, Max_Tokens=20):
     if response.status_code == 200:
         response_json = response.json()
         response_newtextline = response_json["choices"][0]["text"].strip()
-        logging.debug(f"AI response: {response_newtextline}")
+        logging.debug(f"AI - Response: {response_newtextline}")
         return response_newtextline
     else:
         logging.error(f"Failed to generate text: {response.content}")

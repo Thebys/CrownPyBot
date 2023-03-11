@@ -43,14 +43,24 @@ def create_entry(text, state=None, event=None):
     else:
         next_id = 1
 
-    # Create new entry
-    entry = {
-        "id": next_id,
-        "text": text,
-        "hash": hash,
-        "state": state,
-        "event": {"type": event.type.name, "data": event.data}
-    }
+    # Create new entry regardless of if source event is available
+    if event is None:
+        event = {"type": None, "data": None}
+        entry = {
+            "id": next_id,
+            "text": text,
+            "hash": hash,
+            "state": state,
+            "event": event
+        }
+    else:
+        entry = {
+            "id": next_id,
+            "text": text,
+            "hash": hash,
+            "state": state,
+            "event": {"type": event.type.name, "data": event.data}
+        }
 
     # Append new entry to data
     data.append(entry)
