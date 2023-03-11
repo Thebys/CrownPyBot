@@ -4,14 +4,8 @@ import time
 import config
 import MachineBrain
 from MachineBrain import Set
-from MachineBrain import Setting
 from MachineBrain import MachineBrain
-
-
-def pause(seconds=20):
-    """Let the machine sleep for a given number of seconds."""
-    logging.debug(f"Sleep. See you in {seconds} seconds.")
-    time.sleep(seconds)
+from events import EventQueue, EventTypes, Event
 
 
 def setup():
@@ -25,28 +19,40 @@ def setup():
 def loop():
     """Loop the machine's life."""
     while (True):
-        process_round()
+        process_queue()
+        time.sleep(0.1)  # Safety net to prevent CPU hogging
 
 
-def process_round():
-    """Process a round of the machine's life."""
+def process_queue():
+    """Process the machine's event queue."""
     CrownBotBrain = MachineBrain.instance
-    setting = CrownBotBrain.getSetting()
-    if setting == Setting.STARTING_UP:
-        CrownBotBrain.play_crown_sound()
-        CrownBotBrain.setting = Setting.IDLE
-    elif setting == Setting.IDLE:
+    while not CrownBotBrain.event_queue.empty():
+        event = CrownBotBrain.event_queue.get_event_to_handle()
+        if event is not None:
+            handle_event(event)
+    # If the queue is empty, add an idle event to prevent the machine from freezing.
+    CrownBotBrain.event_queue.add_event(Event(EventTypes.MACHINE_IDLE))
+
+
+def handle_event(event):
+    """Handle an event."""
+    type = event.type
+    CrownBotBrain = MachineBrain.instance
+    if type == EventTypes.MACHINE_STARTUP:
+        CrownBotBrain.startup()
+    elif type == EventTypes.MACHINE_SLEEP:
+        CrownBotBrain.sleep(event.data)
+    elif type == EventTypes.MACHINE_IDLE:
         bored = random.randint(0, 99)
-        if (bored > 20 and config.LEARNING):
-            CrownBotBrain.vocalizeNew()
+        if (bored > 80 and config.LEARNING):
+            CrownBotBrain.vocalize_new()
+        elif (bored > 60):
+            CrownBotBrain.vocalize_from_cache()
         else:
-            CrownBotBrain.vocalizeFromCache()
-        CrownBotBrain.brain_shuffle()
-        pause(random.randint(10, 60))
+            CrownBotBrain.event_queue.add_event(
+                Event(EventTypes.MACHINE_SLEEP, random.randint(10, 30)))
     else:
-        CrownBotBrain.vocalizeFromCache()
-        CrownBotBrain.brain_shuffle()
-        pause(random.randint(10, 60))
+        logging.debug(f"Unknown event: {event}")
 
 
 def main():

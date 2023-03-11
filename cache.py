@@ -1,6 +1,7 @@
 import hashlib
 import json
 import random
+import config
 from pathlib import Path
 
 
@@ -12,10 +13,10 @@ def text_to_hash(text):
     return hash[:29]
 
 
-def select_random_text(database_file):
+def select_random_text():
     """Select a random text line from the database file."""
     # Read the data from the database file
-    with open(Path(database_file), "r") as f:
+    with open(Path(config.DATABASE_FILE), "r") as f:
         data = json.load(f)
 
     # Select a random text line
@@ -25,13 +26,13 @@ def select_random_text(database_file):
     return random_text
 
 
-def create_entry(database_file, text):
+def create_entry(text):
     """Create a new entry in the database file."""
     hash = text_to_hash(text.strip())
 
     # Read current data from database file
     try:
-        with open(Path(database_file), "r") as f:
+        with open(Path(config.DATABASE_FILE), "r") as f:
             data = json.load(f)
     except:
         data = []
@@ -53,17 +54,17 @@ def create_entry(database_file, text):
     data.append(entry)
 
     # Write updated data to database file
-    with open(Path(database_file), "w") as f:
+    with open(Path(config.DATABASE_FILE), "w") as f:
         json.dump(data, f)
 
     return entry
 
 
-def get_or_create_entry(database_file, text):
+def get_or_create_entry(text):
     """Get an entry from the database file or create a new one if it doesn't exist."""
     # Read current data from database file
     try:
-        with open(Path(database_file), "r") as f:
+        with open(Path(config.DATABASE_FILE), "r") as f:
             data = json.load(f)
     except:
         data = []
@@ -74,4 +75,4 @@ def get_or_create_entry(database_file, text):
             return entry
 
     # If text is not in database, create new entry
-    return create_entry(database_file, text)
+    return create_entry(text)

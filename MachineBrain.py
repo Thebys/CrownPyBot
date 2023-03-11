@@ -8,6 +8,7 @@ import cache
 import openai
 import googletts
 import time
+from events import EventQueue, EventTypes, Event
 
 # This set of classes is the brain of the machine. It is responsible for the machine's state and behavior.
 # The MachineBrain is a singleton class, so there can only be one instance of it at a time.
@@ -103,25 +104,14 @@ class Set(Enum):
     CT2023 = "Fortune and mystery brought this vintage 1980 Th. Bergmann Crown automatenbau gambling machine to Cybertown 2023 LARP and music festival. Property of Vault tec."
 
 
-class Setting(Enum):
-    """Available action states the machine can be in."""
-    STARTING_UP = "The machine starts up."
-    IDLE = "The machine is idle."
-    ATTENTION_SEEKING = "The machine seeks attention."
-    MACHINE_ERROR = "The machine throws an error!"
-    BORED = "The machine is bored."
-
-
 class MachineBrain:
     instance = None
+    event_queue = None
 
     def __new__(cls):
         if cls.instance is None:
             cls.instance = super().__new__(cls)
         return cls.instance
-
-    def getSetting(self):
-        return self.setting
 
     def getStatus(self):
         """Returns state of the machine in form of prompt-compatible text."""
@@ -163,44 +153,55 @@ class MachineBrain:
             self.energy_level.value + random.randint(-1, 1))
         self.stress_level = random.choice(list(StressLevel))
         self.emotion = random.choice(list(Emotion))
-        self.setting = random.choice(list(Setting))
         logging.debug(
-            f"Machine Brain shuffled with {self.getStatus()} and setting: {self.setting.name}")
+            f"Machine Brain shuffled with {self.getStatus()}")
 
-    def vocalizeFromCache(self):
-        """Vocalize a random line from the audio cache."""
+    def get_random_line_from_cache(self):
+        """Get a random line from the audio cache."""
         cache_line = cache.select_random_text(Path(config.DATABASE_FILE))
-        file_name = cache.text_to_hash(cache_line)+".wav"
-        logging.debug("Vocalizing file {0} from cache with text: {1}.".format(
-            file_name, cache_line))
+        return cache_line
+
+    def vocalize_text_line(self, text_line):
+        file_name = cache.text_to_hash(text_line)+".wav"
+        logging.debug(f"Attempting cached playback of {file_name}.")
         file_path = Path(config.AUDIO_CACHE_FOLDER, file_name)
         if not (file_path.is_file()):
-            logging.error(
-                f"Cache miss! Database file likely corrupted. The file {file_path} doesn't exists.")
+            logging.warn(f"Cache miss! The file {file_path} doesn't exists.")
+            googletts.download_audio(text_line)
         self.crown_play_audio(file_name)
 
-    def vocalizeNew(self):
+    def vocalize_from_cache(self):
+        """Vocalize a random line from the JSON/audio cache."""
+        cache_line = cache.select_random_text()
+        self.vocalize_text_line(cache_line)
+
+    def vocalize_new(self):
         """Vocalize a new line using OpenAI and Google TTS and store it to audio cache."""
-        prompt_input = f"{config.OPENAI_PROMPT_PROGRAM}Set: {self.set.value}{self.getStatus()}Setting: {self.setting.value}\nIt says:\n"
-        # Prompt structure: Program - Set - Machine status - Setting - prompt:
+        prompt_input = f"{config.OPENAI_PROMPT_PROGRAM}Set: {self.set.value}{self.getStatus()}\nYou say:\n"
+        # Prompt structure: Program - Set - Machine status - prompt:
 
         newline = openai.crown_generate_text(prompt_input, 50)
 
-        file_name = cache.text_to_hash(newline)+".wav"
-        file_path = Path(config.AUDIO_CACHE_FOLDER, file_name)
-        cache.get_or_create_entry(Path(config.DATABASE_FILE), newline)
-        if not (file_path.is_file()):
-            logging.warn(f"Cache miss! The file {file_path} doesn't exists.")
-            googletts.download_audio(newline)
-            self.crown_play_audio(file_name)
+        cache.get_or_create_entry(newline)
+        self.vocalize_text_line(newline)
 
-    def __init__(self, Energy=EnergyLevel.HYPER, Stress=StressLevel.CALM, Emotion=Emotion.Content, Set=Set.CT2023):
-        """Initialize the machine brain with default values."""
+    def startup(self):
+        self.energy_level = EnergyLevel.NORMAL
+        self.stress_level = StressLevel.CALM
+        self.emotion = Emotion.Nostalgic
+        self.set = Set.CT2023
+        self.play_crown_sound()
+        self.event_queue.add_event(Event(EventTypes.MACHINE_SLEEP, 10))
+    
+    def sleep(self, seconds):
+        """Let the machine sleep for a given number of seconds."""
+        logging.debug(f"Sleep. See you in {seconds} seconds.")
+        time.sleep(seconds)
+
+    def __init__(self):
+        """Initialize the machine brain."""
+        self.event_queue = EventQueue()
+        self.event_queue.add_event(Event(EventTypes.MACHINE_STARTUP))
         pygame.mixer.init()
         pygame.mixer.music.set_volume(0.7)
-        self.energy_level = Energy
-        self.stress_level = Stress
-        self.emotion = Emotion
-        self.set = Set
-        self.setting = Setting.STARTING_UP
         logging.debug("Machine Brain initialized.")
