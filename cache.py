@@ -26,7 +26,7 @@ def select_random_text():
     return random_text
 
 
-def create_entry(text):
+def create_entry(text, state=None, event=None):
     """Create a new entry in the database file."""
     hash = text_to_hash(text.strip())
 
@@ -47,7 +47,9 @@ def create_entry(text):
     entry = {
         "id": next_id,
         "text": text,
-        "hash": hash
+        "hash": hash,
+        "state": state,
+        "event": {"type": event.type.name, "data": event.data}
     }
 
     # Append new entry to data
@@ -60,7 +62,7 @@ def create_entry(text):
     return entry
 
 
-def get_or_create_entry(text):
+def get_or_create_entry(text, state=None, event=None):
     """Get an entry from the database file or create a new one if it doesn't exist."""
     # Read current data from database file
     try:
@@ -75,4 +77,4 @@ def get_or_create_entry(text):
             return entry
 
     # If text is not in database, create new entry
-    return create_entry(text)
+    return create_entry(text, state, event)

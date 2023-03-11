@@ -113,6 +113,10 @@ class MachineBrain:
             cls.instance = super().__new__(cls)
         return cls.instance
 
+    def getStatusObject(self):
+        """Returns state of the machine in form of a dictionary."""
+        return {"energy": self.energy_level.value, "stress": self.stress_level.value, "emotion": self.emotion.value}
+
     def getStatus(self):
         """Returns state of the machine in form of prompt-compatible text."""
         return f"\nStatus: energy - {self.energy_level.name.lower()}, stress - {self.stress_level.name.lower()}, emotion - {self.emotion.value}.\n"
@@ -175,14 +179,16 @@ class MachineBrain:
         cache_line = cache.select_random_text()
         self.vocalize_text_line(cache_line)
 
-    def vocalize_new(self):
+    def vocalize_new(self, event=None):
         """Vocalize a new line using OpenAI and Google TTS and store it to audio cache."""
-        prompt_input = f"{config.OPENAI_PROMPT_PROGRAM}Set: {self.set.value}{self.getStatus()}\nYou say:\n"
-        # Prompt structure: Program - Set - Machine status - prompt:
+        if event is not None:
+            prompt_input = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}{event.type.name}\nYou say:\n"
+        else:
+            prompt_input = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}You say:\n"
 
         newline = openai.crown_generate_text(prompt_input, 50)
 
-        cache.get_or_create_entry(newline)
+        cache.get_or_create_entry(newline, self.getStatusObject(), event)
         self.vocalize_text_line(newline)
 
     def startup(self):
@@ -191,8 +197,8 @@ class MachineBrain:
         self.emotion = Emotion.Nostalgic
         self.set = Set.CT2023
         self.play_crown_sound()
-        self.event_queue.add_event(Event(EventTypes.MACHINE_SLEEP, 10))
-    
+        self.event_queue.add_event(Event(EventTypes.MACHINE_IDLE))
+
     def sleep(self, seconds):
         """Let the machine sleep for a given number of seconds."""
         logging.debug(f"Sleep. See you in {seconds} seconds.")

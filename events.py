@@ -1,5 +1,6 @@
 from enum import Enum, auto
 import logging
+import json
 
 
 class EventTypes(Enum):
@@ -12,6 +13,23 @@ class EventTypes(Enum):
     MACHINE_BORED = auto()
     MACHINE_ATTENTION_SEEKING = auto()
     INPUT_PIR_DETECTED = auto()
+
+    def __str__(self):
+        """Return a string representation of the event type, usefull for prompting."""
+        if self == EventTypes.MACHINE_STARTUP:
+            return "The machine starts up."
+        elif self == EventTypes.MACHINE_SLEEP:
+            return "The machine sleeps."
+        elif self == EventTypes.MACHINE_IDLE:
+            return "The machine is idle."
+        elif self == EventTypes.MACHINE_BORED:
+            return "The machine is bored."
+        elif self == EventTypes.MACHINE_ATTENTION_SEEKING:
+            return "The machine is seeking attention."
+        elif self == EventTypes.INPUT_PIR_DETECTED:
+            return "The machine detects motion."
+        else:
+            return "Unknown."
 
 
 class Event:
@@ -36,7 +54,8 @@ class EventQueue:
 
     def get_event_to_handle(self):
         if len(self.events) > 0:
-            logging.debug(f"EQ - Handling: {self.events[0].type.name} Data: {self.events[0].data}.")
+            logging.debug(
+                f"EQ - Handling: {self.events[0].type.name} Data: {self.events[0].data}.")
             return self.events.pop(0)
         return None
 
