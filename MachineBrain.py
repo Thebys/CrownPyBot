@@ -149,7 +149,7 @@ class MachineBrain:
     def play_audio_file(self, fileToPlay):
         """Play an audio file using pygame."""
         file = str(fileToPlay.resolve())
-        logging.debug(f"Playing audio {file}")
+        logging.debug(f"FS - Playing audio {file}")
         pygame.mixer.init()
         pygame.mixer.music.load(file)
         pygame.mixer.music.play()
@@ -172,10 +172,10 @@ class MachineBrain:
 
     def vocalize_text_line(self, text_line):
         file_name = cache.text_to_hash(text_line)+".wav"
-        logging.debug(f"Attempting cached playback of {file_name}.")
+        logging.debug(f"FS - Attempting cached playback of {file_name}.")
         file_path = Path(config.AUDIO_CACHE_FOLDER, file_name)
         if not (file_path.is_file()):
-            logging.warn(f"Cache miss! The file {file_path} doesn't exists.")
+            logging.warn(f"FS - Cache miss! The file {file_path} doesn't exists.")
             googletts.download_audio(text_line)
         self.crown_play_audio(file_name)
 
@@ -210,12 +210,12 @@ class MachineBrain:
         cache.get_or_create_entry(memory_text, self.getStatusObject(), event)
         self.vocalize_text_line(memory_text)
 
-    def vocalize_praise_vault_tec(self, event=None):
+    def vocalize_praise_vault_tec(self):
         """Vocalize a praise for Vault-Tec using Google TTS."""
         PG = PromptGenerator.PromptGenerator()
         prompt = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}{PG.praise_vault_tec()} You say:\n"
         praise_text = openai.crown_generate_text(prompt, 1200, 0.95, 0.35)
-        self.vocalize_text_line(praise_text, event)
+        self.vocalize_text_line(praise_text)
 
     def vocalize_direct(self, text, event=None):
         """Vocalize a given line using Google TTS."""
@@ -274,7 +274,7 @@ class MachineBrain:
 
     def sleep(self, seconds=20):
         """Let the machine sleep for a given number of seconds."""
-        logging.debug(f"Sleep. See you in {seconds} seconds.")
+        logging.debug(f"EQ - Sleep. See you in {seconds} seconds.")
         time.sleep(seconds)
 
     def __init__(self):

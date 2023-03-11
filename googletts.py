@@ -29,4 +29,4 @@ def download_audio(Prompt, LangCode="de-DE", VoiceName="de-DE-Wavenet-E", Pitch=
     with open(file_path, "wb") as out:
         # Write the response to the output file.
         out.write(response.audio_content)
-        logging.debug(f"Saved audio file for text:\n {Prompt} as {file_path}.")
+        logging.debug(f"FS - Saved audio file for text:\n {Prompt} as {file_path}.")
