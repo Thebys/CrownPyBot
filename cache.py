@@ -3,11 +3,17 @@ import json
 import random
 from pathlib import Path
 
+
 def text_to_hash(text):
+    """Generate a 29 character hash from a string.
+        - Used for audio cache file names.
+        - Changing the hash will break the cache."""
     hash = hashlib.sha256(text.encode()).hexdigest()
     return hash[:29]
 
+
 def select_random_text(database_file):
+    """Select a random text line from the database file."""
     # Read the data from the database file
     with open(Path(database_file), "r") as f:
         data = json.load(f)
@@ -18,8 +24,9 @@ def select_random_text(database_file):
 
     return random_text
 
+
 def create_entry(database_file, text):
-    # Generate hash of text
+    """Create a new entry in the database file."""
     hash = text_to_hash(text.strip())
 
     # Read current data from database file
@@ -51,7 +58,9 @@ def create_entry(database_file, text):
 
     return entry
 
+
 def get_or_create_entry(database_file, text):
+    """Get an entry from the database file or create a new one if it doesn't exist."""
     # Read current data from database file
     try:
         with open(Path(database_file), "r") as f:

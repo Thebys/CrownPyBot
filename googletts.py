@@ -8,7 +8,7 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config.GOOGLE_KEYFILE_PATH
 
 
 def download_audio(Prompt, LangCode="de-DE", VoiceName="de-DE-Wavenet-E", Pitch=5.2, SprakingRate=1.0):
-
+    """Download audio file from Google TTS API and cache it."""
     client = texttospeech.TextToSpeechClient()
     synthesis_input = texttospeech.SynthesisInput(text=Prompt)
     voice = texttospeech.VoiceSelectionParams(

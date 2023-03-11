@@ -5,6 +5,7 @@ import logging
 import config
     
 def crown_generate_text(Prompt_Input, Max_Tokens = 20):
+    """Return new text line from the AI model, based on the prompt input."""
     logging.debug("AI request prompt:\n{0}".format(Prompt_Input))
     headers = {
         "Content-Type": "application/json",
