@@ -182,24 +182,34 @@ class MachineBrain:
     def vocalize_new(self, event=None):
         """Vocalize a new line using OpenAI and Google TTS and store it to audio cache."""
         if event is not None:
-            prompt_input = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}{event.type.name}\nYou say:\n"
+            prompt_input = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}{str(event.type)} You say:\n"
         else:
             prompt_input = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}You say:\n"
 
         newline = openai.crown_generate_text(prompt_input, 50)
-
         cache.get_or_create_entry(newline, self.getStatusObject(), event)
         self.vocalize_text_line(newline)
 
+    def vocalize_direct(self, text, event=None):
+        """Vocalize a given line using Google TTS."""
+        cache.get_or_create_entry(text, self.getStatusObject(), event)
+        self.vocalize_text_line(text)
+
     def startup(self):
+        """Start the machine and set it to a default state."""
         self.energy_level = EnergyLevel.NORMAL
         self.stress_level = StressLevel.CALM
         self.emotion = Emotion.Nostalgic
         self.set = Set.CT2023
         self.play_crown_sound()
-        self.event_queue.add_event(Event(EventTypes.MACHINE_IDLE))
+        self.event_queue.add_event(Event(
+            EventTypes.DIRECT_SPEECH, "Hello, I am a vintage Crown gambling machine made by T H Bergmann in 1980."))
+        self.event_queue.add_event(Event(EventTypes.MACHINE_SLEEP, 3))
+        self.event_queue.add_event(Event(
+            EventTypes.DIRECT_SPEECH, "I have been found, claimed and repaired by a mysterious hacker who saved me from 30 years stuck with a flat hoarder."))
+        self.event_queue.add_event(Event(EventTypes.MACHINE_SLEEP, 20))
 
-    def sleep(self, seconds):
+    def sleep(self, seconds=20):
         """Let the machine sleep for a given number of seconds."""
         logging.debug(f"Sleep. See you in {seconds} seconds.")
         time.sleep(seconds)

@@ -10,6 +10,7 @@ class EventTypes(Enum):
     MACHINE_SHUTDOWN = auto()
     MACHINE_ERROR = auto()
     MACHINE_IDLE = auto()
+    DIRECT_SPEECH = auto()
     MACHINE_BORED = auto()
     MACHINE_ATTENTION_SEEKING = auto()
     INPUT_PIR_DETECTED = auto()
@@ -28,6 +29,8 @@ class EventTypes(Enum):
             return "The machine is seeking attention."
         elif self == EventTypes.INPUT_PIR_DETECTED:
             return "The machine detects motion."
+        elif self == EventTypes.DIRECT_SPEECH:
+            return "The machine speaks."
         else:
             return "Unknown."
 
