@@ -9,8 +9,10 @@ import cache
 import openai
 import googletts
 import time
+import PromptGenerator
 from datetime import datetime
 from events import EventQueue, EventTypes, Event
+
 
 # This set of classes is the brain of the machine. It is responsible for the machine's state and behavior.
 # The MachineBrain is a singleton class, so there can only be one instance of it at a time.
@@ -103,7 +105,7 @@ class Set(Enum):
     HOME_LAB = "Vintage 1980 Z80 based Crown gambling machine sits in mysterious hackers home lab and being cared for, getting a new life."
     FURRY_HACKATHON = "Original vintage Th. Bergmann Automatenbau 1980 Crown gambling machine comes to life at a furry hackathon after collecting dust for 30 years."
     POSTAPOCALYPTIC = "How this vintage Crown gambling machine survived the apocalypse remains a mystery, yet here it is."
-    CT2023 = "Fortune and mystery brought this vintage 1980 Th. Bergmann Crown automatenbau gambling machine to Cybertown 2023 LARP and music festival. Property of Vault tec."
+    CT2023 = "Fortune and mystery brought you to Cybertown 2023 LARP and music festival. You roleplay a vending machine and are a proud property of Vault tec faction."
 
 
 class MachineBrain:
@@ -193,6 +195,28 @@ class MachineBrain:
         cache.get_or_create_entry(newline, self.getStatusObject(), event)
         self.vocalize_text_line(newline)
 
+    def vocalize_random_memory(self, event=None):
+        if self.online:
+            self.vocalize_new_random_memory(event)
+        else:
+            self.vocalize_from_cache()
+
+    def vocalize_new_random_memory(self, event=None):
+        """Vocalize new random memory using prompt generator, OpenAI and Google TTS and store it to audio cache."""
+        PG = PromptGenerator.PromptGenerator()
+        prompt = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}{PG.generate_random_memory_prompt()} You say:\n"
+
+        memory_text = openai.crown_generate_text(prompt, 2000, 0.9, 0.65)
+        cache.get_or_create_entry(memory_text, self.getStatusObject(), event)
+        self.vocalize_text_line(memory_text)
+
+    def vocalize_praise_vault_tec(self, event=None):
+        """Vocalize a praise for Vault-Tec using Google TTS."""
+        PG = PromptGenerator.PromptGenerator()
+        prompt = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}{PG.praise_vault_tec()} You say:\n"
+        praise_text = openai.crown_generate_text(prompt, 1200, 0.95, 0.35)
+        self.vocalize_text_line(praise_text, event)
+
     def vocalize_direct(self, text, event=None):
         """Vocalize a given line using Google TTS."""
         cache.get_or_create_entry(text, self.getStatusObject(), event)
@@ -235,7 +259,7 @@ class MachineBrain:
 
     def startup_online(self):
         self.play_crown_sound()
-        self.event_queue.add_event(Event(EventTypes.MACHINE_SLEEP, 10))
+        self.event_queue.add_event(Event(EventTypes.MACHINE_SLEEP, 5))
 
     def startup_offline(self):
         self.play_crown_sound()

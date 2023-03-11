@@ -1,6 +1,5 @@
 from enum import Enum, auto
 import logging
-import json
 
 
 class EventTypes(Enum):
@@ -12,6 +11,8 @@ class EventTypes(Enum):
     MACHINE_IDLE = auto()
     DIRECT_SPEECH = auto()
     SAY_TIME = auto()
+    SAY_RANDOM_MEMORY = auto()
+    SAY_PRAISE_VAULT_TEC = auto()
     MACHINE_BORED = auto()
     MACHINE_ATTENTION_SEEKING = auto()
     INPUT_PIR_DETECTED = auto()
@@ -34,6 +35,10 @@ class EventTypes(Enum):
             return "The machine speaks."
         elif self == EventTypes.SAY_TIME:
             return "The machine says the current time."
+        elif self == EventTypes.SAY_RANDOM_MEMORY:
+            return "The machine says a random memory."
+        elif self == EventTypes.SAY_PRAISE_VAULT_TEC:
+            return "The machine praises Vault-Tec."
         else:
             return "Unknown."
 
@@ -49,38 +54,30 @@ class EventQueue:
         self.events = []
 
     def add_event(self, event):
-        logging.debug(f"EQ - Adding: {event.type} - {event.data}.")
+        logging.debug(f"EQ - Adding: {event.type} - Data: {event.data}.")
         self.events.append(event)
 
     def get_events(self):
         return self.events
 
-    def clear_events(self):
-        self.events = []
-
     def get_event_to_handle(self):
         if len(self.events) > 0:
             logging.debug(
-                f"EQ - Handling: {self.events[0].type.name} Data: {self.events[0].data}.")
+                f"EQ - Handling: {self.events[0].type.name} - Data: {self.events[0].data}.")
             return self.events.pop(0)
         return None
+
+    def empty(self):
+        return len(self.events) == 0
+
+    def has_event_of_type(self, event_type):
+        for event in self.events:
+            if event.type == event_type:
+                return True
+        return False
 
     def get_event_of_type(self, event_type):
         for event in self.events:
             if event.type == event_type:
                 return event
         return None
-
-    def remove_event(self, event_type):
-        for event in self.events:
-            if event.type == event_type:
-                self.events.remove(event)
-
-    def empty(self):
-        return len(self.events) == 0
-
-    def has_event(self, event_type):
-        for event in self.events:
-            if event.type == event_type:
-                return True
-        return False

@@ -5,7 +5,7 @@ import logging
 import config
 
 
-def crown_generate_text(Prompt_Input, Max_Tokens=20):
+def crown_generate_text(Prompt_Input, Max_Tokens=20, temperature=0.65, top_p=0.8):
     """Return new text line from the AI model, based on the prompt input."""
     logging.debug(f"AI - Prompt: {Prompt_Input}")
     headers = {
@@ -15,9 +15,9 @@ def crown_generate_text(Prompt_Input, Max_Tokens=20):
     data = {
         "prompt": Prompt_Input,
         "model": config.OPENAI_AI_MODEL,
-        "temperature": 0.65,
+        "temperature": temperature,
         "max_tokens": Max_Tokens,
-        "top_p": 0.8,
+        "top_p": top_p,
         "frequency_penalty": 0,
         "presence_penalty": 0
     }
