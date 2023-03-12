@@ -65,9 +65,6 @@ def handle_event(event):
             elif (choice == 3):
                 CrownBotBrain.event_queue.add_event(
                     Event(EventTypes.SAY_PRAISE_VAULT_TEC))
-            CrownBotBrain.event_queue.add_event(
-                Event(EventTypes.MACHINE_SLEEP, random.randint(10, 30)))
-
         else:
             CrownBotBrain.vocalize_from_cache()
         CrownBotBrain.event_queue.add_event(

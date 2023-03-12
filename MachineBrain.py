@@ -252,6 +252,7 @@ class MachineBrain:
         self.pir = MotionSensor(4)  # GPIO pin 4 (physical pin 7)
         self.pir.when_motion = self.motion_detected
         self.wake_up = False
+        self.recent_motion = datetime.now()
         self.online = self.check_connection_is_online()
         self.energy_level = EnergyLevel.NORMAL
         self.stress_level = StressLevel.CALM
@@ -280,13 +281,21 @@ class MachineBrain:
     def motion_detected(self):
         """Handle motion detection."""
         logging.debug("PIR - Motion detected!")
+        self.recent_motion = datetime.now()
         self.wake_up = True
-        self.event_queue.add_event(Event(EventTypes.INPUT_PIR_DETECTED))
+        if (self.event_queue.has_event_of_type(EventTypes.INPUT_PIR_DETECTED)):
+            logging.debug("PIR - Motion already queued!")
+            logging.debug(
+                f"EQ - There are {self.event_queue.events.count()} total events.")
+            return
+        else:
+            self.event_queue.add_event(Event(EventTypes.INPUT_PIR_DETECTED))
 
     def handle_movement(self, event=None):
         """Handle movement event from the EQ."""
-        self.event_queue.add_event(Event(
-            EventTypes.DIRECT_SPEECH, "I see movement in the infra red spectrum!"))
+        if ((datetime.now() - self.recent_motion).total_seconds < 60):
+            self.event_queue.add_event(Event(
+                EventTypes.DIRECT_SPEECH, "Ah! Movement in infrared spectrum!"))
 
     def sleep(self, seconds=20):
         """Let the machine sleep for a given number of seconds."""
