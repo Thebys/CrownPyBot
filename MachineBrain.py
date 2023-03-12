@@ -293,7 +293,7 @@ class MachineBrain:
 
     def handle_movement(self, event=None):
         """Handle movement event from the EQ."""
-        if ((datetime.now() - self.recent_motion).total_seconds < 60):
+        if ((datetime.now() - self.recent_motion).total_seconds() < 60):
             self.event_queue.add_event(Event(
                 EventTypes.DIRECT_SPEECH, "Ah! Movement in infrared spectrum!"))
 
