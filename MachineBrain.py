@@ -86,21 +86,28 @@ class StressLevel(Enum):
 
 class Emotion(Enum):
     """Emotion palette of the machine."""
-    Content = "content"
-    Happy = "happy"
     Excited = "excited"
-    Sad = "sad"
+    Surprised = "surprised"
+    Happy = "happy"
+    Content = "content"
+    Amused = "amused"
+    Nostalgic = "nostalgic"
     Angry = "angry"
+    Sad = "sad"
     Fearful = "fearful"
     Anxious = "anxious"
-    Nostalgic = "nostalgic"
-    Amused = "amused"
     Bored = "bored"
     Confused = "confused"
     Disgusted = "disgusted"
     Envious = "envious"
     Frustrated = "frustrated"
-    Surprised = "surprised"
+
+
+class BehaviorMode(Enum):
+    """Available behavior modes the machine can run in."""
+    CALM = "calm"
+    NORMAL = "normal"
+    CRAZY = "crazy"
 
 
 class Set(Enum):
@@ -115,6 +122,7 @@ class MachineBrain:
     """The brain of the machine. It is responsible for the machine's state and behavior."""
     instance = None
     event_queue = None
+    behavior_mode = None
 
     def __new__(cls):
         if cls.instance is None:
@@ -159,14 +167,34 @@ class MachineBrain:
         while pygame.mixer.music.get_busy():
             time.sleep(1)
 
-    def brain_shuffle(self):
-        """Shuffle the machine brain and set the machine to a random state."""
+    def advance(self):
+        """Advance the machine state by one step based on selected behavior mode."""
+        if (self.behavior_mode == BehaviorMode.CRAZY):
+            self.brain_shuffle()
+        elif (self.behavior_mode == BehaviorMode.NORMAL):
+            self.brain_advance()
+        else:
+            return
+
+    def brain_advance(self):
+        """Advance the machine brain one step."""
         self.energy_level = EnergyLevel(
             self.energy_level.value + random.randint(-1, 1))
+        self.stress_level = StressLevel(
+            self.stress_level.value + random.randint(-1, 1))
+        if (random.randint(0, 9) < 3):  # 30% chance of emotion change
+            self.emotion = random.choice(list(Emotion))
+
+        logging.debug(
+            f"Machine Brain advanced to {self.getStatus()}")
+
+    def brain_shuffle(self):
+        """Shuffle the machine brain and set the machine to a random state."""
+        self.energy_level = random.choice(list(EnergyLevel))
         self.stress_level = random.choice(list(StressLevel))
         self.emotion = random.choice(list(Emotion))
         logging.debug(
-            f"Machine Brain shuffled with {self.getStatus()}")
+            f"Machine Brain shuffled to {self.getStatus()}")
 
     def get_random_line_from_cache(self):
         """Get a random line from the audio cache."""
@@ -180,8 +208,23 @@ class MachineBrain:
         if not (file_path.is_file()):
             logging.warn(
                 f"FS - Cache miss! The file {file_path} doesn't exists.")
-            # googletts.download_audio(text_line)
-            googletts.download_audio_czech(text_line)
+            if (config.LANGUAGE == "Czech"):
+                energy_based_speaking_rate = 0.95
+                if self.energy_level == EnergyLevel.EXHAUSTED:
+                    energy_based_speaking_rate = 0.75
+                elif self.energy_level == EnergyLevel.TIRED:
+                    energy_based_speaking_rate = 0.85
+                elif self.energy_level == EnergyLevel.NORMAL:
+                    energy_based_speaking_rate = 0.95
+                elif self.energy_level == EnergyLevel.ENERGIZED:
+                    energy_based_speaking_rate = 1.15
+                elif self.energy_level == EnergyLevel.HYPER:
+                    energy_based_speaking_rate = 1.30
+                googletts.download_audio_czech(
+                    text_line, SpeakingRate=energy_based_speaking_rate)
+            else:
+                googletts.download_audio(text_line)
+
         self.crown_play_audio(file_name)
 
     def vocalize_from_cache(self):
@@ -215,9 +258,9 @@ class MachineBrain:
         """Vocalize new random memory using prompt generator, OpenAI and Google TTS and store it to audio cache."""
         PG = PromptGenerator.PromptGenerator()
         if config.LANGUAGE == "Czech":
-            prompt = f"{config.OPENAI_PROMPT_PROGRAM_CZECH}Scene: {self.set.value}{self.getStatus()}{PG.generate_random_memory_prompt()} You say:\n"
+            prompt = f"{config.OPENAI_PROMPT_PROGRAM_CZECH}Scene: {self.set.value}{self.getStatus()}{PG.generate_random_memory_prompt(self.emotion.value)} You say:\n"
         else:
-            prompt = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}{PG.generate_random_memory_prompt()} You say:\n"
+            prompt = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}{PG.generate_random_memory_prompt(self.emotion.value)} You say:\n"
         memory_text = openai.crown_generate_text(prompt, 2000, 0.9, 0.65)
         cache.get_or_create_entry(memory_text, self.getStatusObject(), event)
         self.vocalize_text_line(memory_text)
@@ -242,8 +285,12 @@ class MachineBrain:
         cd = datetime.now()
         hours = cd.strftime("%H")
         minutes = cd.strftime("%M")
-        self.vocalize_direct(
-            f"Current time is {hours} hours and {minutes} minutes.", event)
+        if (config.LANGUAGE == "Czech"):
+            self.vocalize_direct(
+                f"Právě je {hours} hodin a {minutes} minut.", event)
+        else:
+            self.vocalize_direct(
+                f"Current time is {hours} hours and {minutes} minutes.", event)
 
     def check_connection_is_online(self):
         """Check if the internet connection is online."""
@@ -269,6 +316,7 @@ class MachineBrain:
         else:
             self.pir = MotionSensor(4)  # GPIO pin 4 (physical pin 7)
         self.pir.when_motion = self.motion_detected
+        self.behavior_mode = BehaviorMode.NORMAL
         self.wake_up = False
         self.recent_motion = datetime.now()
         self.online = self.check_connection_is_online()

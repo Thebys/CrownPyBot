@@ -1,6 +1,7 @@
 from enum import Enum
 import random
 import logging
+
 # This file contains several scene enumartion classes and a class that assits in prompt construction.
 
 
@@ -28,6 +29,8 @@ class Location(Enum):
     THE_BACKYARD = "The backyard."
     THE_STORE = "The store."
     THE_STREET = "The street."
+    THE_PARK = "The public park."
+    THE_OFFICE = "The central office."
     SCHNEIDERS_PUB = "The Schneider's pub."
     THE_RESTAURANT = "The Nowak restaurant."
     BECKERS_RESTAURANT = "Becker's restaurant."
@@ -50,6 +53,20 @@ class Characters(Enum):
     CHEF = "chef"
     EMPLOYEE = "employee"
     ELEVATOR_SERVICEMAN = "elevator serviceman"
+    MUSIC_BAND_MEMBER = "music band member"
+    MUSIC_BAND_LEADER = "music band leader"
+    MUSIC_PRODUCER = "music producer"
+    DRUG_DEALER = "drug dealer"
+    DRUG_ADDICT = "drug addict"
+    DRIVER = "driver"
+    TAXI_DRIVER = "taxi driver"
+    POLICE_OFFICER = "police officer"
+    FIREFIGHTER = "firefighter"
+    TEACHER = "teacher"
+    STUDENT = "student"
+    PARENT = "parent"
+    FAMILY_MEMBER = "family member"
+    FAMILY = "family"
 
     def __str__(self) -> str:
         return self.value
@@ -89,8 +106,18 @@ class Objects(Enum):
     PROTEIN_BAR = "protein bar"
     JOINT = "joint"
     BEER = "beer"
-    BOTTLE_OF_WATER = "bottle of water"
+    BOTTLE = "bottle"
     CAN_OF_NUKA_COLA = "can of Nuka Cola"
+    VENDING_MACHINE = "vending machine"
+    COFFEE_MACHINE = "coffee machine"
+    COFFEE = "coffee"
+    PIZZA = "pizza"
+    BURGER = "burger"
+    PHONE = "phone"
+    PHONE_CALL = "phone call"
+    NEWSPAPER = "newspaper"
+    TV = "TV"
+    RADIO = "radio"
 
     def __str__(self) -> str:
         return self.value
@@ -120,16 +147,16 @@ class PromptGenerator:
         for _ in range(number_of_objects):
             self.objects[_] = Objects.random()
 
-    def generate_random_memory_prompt(self):
+    def generate_random_memory_prompt(self, emotion = ""):
         """Generate a memory prompt."""
         # Convert character and object lists to comma-separated strings
         characters = ', '.join(str(ch) for ch in self.characters.values())
         objects = ', '.join(str(ob) for ob in self.objects.values())
 
-        prompt = f"You share a memory you observed as the machine. Location? { self.location.value } Time? {self.era.value} It is about {characters} and {objects}."
+        prompt = f"You tell a short {emotion} memory anecdote. Location? { self.location.value } Time? {self.era.value} It is about {characters} and {objects}."
         return prompt
 
     def praise_vault_tec(self):
         """Generate a prompt praising Vault-Tec."""
-        prompt = f"You share a cheerfull catchy post-apocalyptic praise of the Vault-Tec corporation and faction."
+        prompt = f"You greet passer-bys with an over the top post apocalyptic irony punchline for the Vaultek."
         return prompt

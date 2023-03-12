@@ -32,11 +32,9 @@ def process_queue():
         event = CrownBotBrain.event_queue.get_event_to_handle()
         if event is not None:
             handle_event(event)
+            CrownBotBrain.advance()
     # If the queue is empty, add an idle event to prevent the machine from freezing.
-    if config.DEVELOPMENT:
-        CrownBotBrain.event_queue.add_event(Event(EventTypes.MACHINE_IDLE))
-    else:
-        CrownBotBrain.event_queue.add_event(Event(EventTypes.MACHINE_IDLE))
+    CrownBotBrain.event_queue.add_event(Event(EventTypes.MACHINE_IDLE))
 
 
 def handle_event(event):
@@ -59,17 +57,17 @@ def handle_event(event):
         CrownBotBrain.handle_movement(event)
     elif type == EventTypes.MACHINE_IDLE:
         if (config.LEARNING):
-            choice = random.randint(0, 4)
+            choice = random.randint(0, 2)
             if (choice == 0):
                 CrownBotBrain.event_queue.add_event(
                     Event(EventTypes.SAY_RANDOM_MEMORY))
             elif (choice == 1):
-                CrownBotBrain.event_queue.add_event(Event(EventTypes.SAY_TIME))
-            elif (choice == 2):
-                CrownBotBrain.vocalize_from_cache()
-            elif (choice == 3):
                 CrownBotBrain.event_queue.add_event(
                     Event(EventTypes.SAY_PRAISE_VAULT_TEC))
+            elif (choice == 2):
+                CrownBotBrain.event_queue.add_event(Event(EventTypes.SAY_TIME))
+            elif (choice == 3):
+                CrownBotBrain.vocalize_from_cache()
             elif (choice == 4):
                 CrownBotBrain.event_queue.add_event(
                     Event(EventTypes.INPUT_PIR_DETECTED))
