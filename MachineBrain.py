@@ -212,7 +212,7 @@ class MachineBrain:
         cache.get_or_create_entry(memory_text, self.getStatusObject(), event)
         self.vocalize_text_line(memory_text)
 
-    def vocalize_praise_vault_tec(self):
+    def vocalize_praise_vault_tec(self, event=None):
         """Vocalize a praise for Vault-Tec using Google TTS."""
         PG = PromptGenerator.PromptGenerator()
         prompt = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}{PG.praise_vault_tec()} You say:\n"
@@ -283,7 +283,7 @@ class MachineBrain:
         self.wake_up = True
         self.event_queue.add_event(Event(EventTypes.INPUT_PIR_DETECTED))
 
-    def handle_movement(self, event):
+    def handle_movement(self, event=None):
         """Handle movement event from the EQ."""
         self.event_queue.add_event(Event(
             EventTypes.DIRECT_SPEECH, "I see movement in the infra red spectrum!"))
