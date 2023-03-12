@@ -50,6 +50,8 @@ def handle_event(event):
         CrownBotBrain.vocalize_random_memory(event)
     elif type == EventTypes.SAY_PRAISE_VAULT_TEC:
         CrownBotBrain.vocalize_praise_vault_tec(event)
+    elif type == EventTypes.INPUT_PIR_DETECTED:
+        CrownBotBrain.handle_movement(event)
     elif type == EventTypes.MACHINE_IDLE:
         if (config.LEARNING):
             choice = random.randint(0, 3)

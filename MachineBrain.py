@@ -12,6 +12,7 @@ import time
 import PromptGenerator
 from datetime import datetime
 from events import EventQueue, EventTypes, Event
+from gpiozero import MotionSensor
 
 
 # This set of classes is the brain of the machine. It is responsible for the machine's state and behavior.
@@ -175,7 +176,8 @@ class MachineBrain:
         logging.debug(f"FS - Attempting cached playback of {file_name}.")
         file_path = Path(config.AUDIO_CACHE_FOLDER, file_name)
         if not (file_path.is_file()):
-            logging.warn(f"FS - Cache miss! The file {file_path} doesn't exists.")
+            logging.warn(
+                f"FS - Cache miss! The file {file_path} doesn't exists.")
             googletts.download_audio(text_line)
         self.crown_play_audio(file_name)
 
@@ -247,6 +249,9 @@ class MachineBrain:
 
     def startup(self):
         """Start the machine and set it to a default state."""
+        self.pir = MotionSensor(4)  # GPIO pin 4 (physical pin 7)
+        self.pir.when_motion = self.motion_detected
+        self.wake_up = False
         self.online = self.check_connection_is_online()
         self.energy_level = EnergyLevel.NORMAL
         self.stress_level = StressLevel.CALM
@@ -272,10 +277,26 @@ class MachineBrain:
         self.event_queue.add_event(Event(EventTypes.SAY_TIME))
         self.event_queue.add_event(Event(EventTypes.MACHINE_SLEEP, 10))
 
+    def motion_detected(self):
+        """Handle motion detection."""
+        logging.debug("PIR - Motion detected!")
+        self.wake_up = True
+        self.event_queue.add_event(Event(EventTypes.INPUT_PIR_DETECTED))
+
+    def handle_movement(self):
+        """Handle movement event from the EQ."""
+        self.event_queue.add_event(Event(
+            EventTypes.DIRECT_SPEECH, "I see movement in the infra red spectrum!"))
+
     def sleep(self, seconds=20):
         """Let the machine sleep for a given number of seconds."""
         logging.debug(f"EQ - Sleep. See you in {seconds} seconds.")
-        time.sleep(seconds)
+        for i in range(seconds):
+            if self.wake_up:
+                self.wake_up = False
+                return
+            else:
+                time.sleep(1)
 
     def __init__(self):
         """Initialize the machine brain."""
