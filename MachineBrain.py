@@ -7,12 +7,14 @@ import config
 import pygame
 import cache
 import openai
+import platform
 import googletts
 import time
 import PromptGenerator
 from datetime import datetime
 from events import EventQueue, EventTypes, Event
 from gpiozero import MotionSensor
+from gpiozero.pins.mock import MockFactory
 
 
 # This set of classes is the brain of the machine. It is responsible for the machine's state and behavior.
@@ -178,7 +180,8 @@ class MachineBrain:
         if not (file_path.is_file()):
             logging.warn(
                 f"FS - Cache miss! The file {file_path} doesn't exists.")
-            googletts.download_audio(text_line)
+            # googletts.download_audio(text_line)
+            googletts.download_audio_czech(text_line)
         self.crown_play_audio(file_name)
 
     def vocalize_from_cache(self):
@@ -188,11 +191,16 @@ class MachineBrain:
 
     def vocalize_new(self, event=None):
         """Vocalize a new line using OpenAI and Google TTS and store it to audio cache."""
-        if event is not None:
-            prompt_input = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}{str(event.type)} You say:\n"
+        if config.LANGUAGE == "Czech":
+            if event is not None:
+                prompt_input = f"{config.OPENAI_PROMPT_PROGRAM_CZECH}Scene: {self.set.value}{self.getStatus()}{str(event.type)} You say:\n"
+            else:
+                prompt_input = f"{config.OPENAI_PROMPT_PROGRAM_CZECH}Scene: {self.set.value}{self.getStatus()}You say:\n"
         else:
-            prompt_input = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}You say:\n"
-
+            if event is not None:
+                prompt_input = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}{str(event.type)} You say:\n"
+            else:
+                prompt_input = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}You say:\n"
         newline = openai.crown_generate_text(prompt_input, 50)
         cache.get_or_create_entry(newline, self.getStatusObject(), event)
         self.vocalize_text_line(newline)
@@ -206,8 +214,10 @@ class MachineBrain:
     def vocalize_new_random_memory(self, event=None):
         """Vocalize new random memory using prompt generator, OpenAI and Google TTS and store it to audio cache."""
         PG = PromptGenerator.PromptGenerator()
-        prompt = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}{PG.generate_random_memory_prompt()} You say:\n"
-
+        if config.LANGUAGE == "Czech":
+            prompt = f"{config.OPENAI_PROMPT_PROGRAM_CZECH}Scene: {self.set.value}{self.getStatus()}{PG.generate_random_memory_prompt()} You say:\n"
+        else:
+            prompt = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}{PG.generate_random_memory_prompt()} You say:\n"
         memory_text = openai.crown_generate_text(prompt, 2000, 0.9, 0.65)
         cache.get_or_create_entry(memory_text, self.getStatusObject(), event)
         self.vocalize_text_line(memory_text)
@@ -215,7 +225,10 @@ class MachineBrain:
     def vocalize_praise_vault_tec(self, event=None):
         """Vocalize a praise for Vault-Tec using Google TTS."""
         PG = PromptGenerator.PromptGenerator()
-        prompt = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}{PG.praise_vault_tec()} You say:\n"
+        if config.LANGUAGE == "Czech":
+            prompt = f"{config.OPENAI_PROMPT_PROGRAM_CZECH}Scene: {self.set.value}{self.getStatus()}{PG.praise_vault_tec()} You say:\n"
+        else:
+            prompt = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}{PG.praise_vault_tec()} You say:\n"
         praise_text = openai.crown_generate_text(prompt, 1200, 0.95, 0.35)
         self.vocalize_text_line(praise_text)
 
@@ -249,7 +262,12 @@ class MachineBrain:
 
     def startup(self):
         """Start the machine and set it to a default state."""
-        self.pir = MotionSensor(4)  # GPIO pin 4 (physical pin 7)
+        if (platform.system() == "Windows"):  # Windows DEV has no real GPIO
+            PF = MockFactory()
+            # MOCK PIN, see https://gpiozero.readthedocs.io/en/stable/api_pins.html#mock-pins
+            self.pir = MotionSensor(4, pin_factory=PF)
+        else:
+            self.pir = MotionSensor(4)  # GPIO pin 4 (physical pin 7)
         self.pir.when_motion = self.motion_detected
         self.wake_up = False
         self.recent_motion = datetime.now()
@@ -279,7 +297,7 @@ class MachineBrain:
         self.event_queue.add_event(Event(EventTypes.MACHINE_SLEEP, 10))
 
     def motion_detected(self):
-        """Handle motion detection."""
+        """Handle motion detection HW event."""
         logging.debug("PIR - Motion detected!")
         self.recent_motion = datetime.now()
         self.wake_up = True

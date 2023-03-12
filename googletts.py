@@ -29,4 +29,28 @@ def download_audio(Prompt, LangCode="de-DE", VoiceName="de-DE-Wavenet-E", Pitch=
     with open(file_path, "wb") as out:
         # Write the response to the output file.
         out.write(response.audio_content)
-        logging.debug(f"FS - Saved audio file for text:\n {Prompt} as {file_path}.")
+        logging.debug(f"FS - Saved audio file: {file_path}.")
+
+def download_audio_czech(Prompt, LangCode="cs-CZ", VoiceName="cs-CZ-Wavenet-A", Pitch=-18, SprakingRate=0.85):
+    """Download audio file from Google TTS API and cache it."""
+    client = texttospeech.TextToSpeechClient()
+    synthesis_input = texttospeech.SynthesisInput(text=Prompt)
+    voice = texttospeech.VoiceSelectionParams(
+        language_code=LangCode, name=VoiceName
+    )
+
+    audio_config = texttospeech.AudioConfig(
+        audio_encoding=texttospeech.AudioEncoding.LINEAR16, pitch=Pitch, speaking_rate=SprakingRate
+    )
+
+    response = client.synthesize_speech(
+        input=synthesis_input, voice=voice, audio_config=audio_config
+    )
+
+    file_name = cache.text_to_hash(Prompt) + ".wav"
+    file_path = Path(config.AUDIO_CACHE_FOLDER, file_name).resolve()
+
+    with open(file_path, "wb") as out:
+        # Write the response to the output file.
+        out.write(response.audio_content)
+        logging.debug(f"FS - Saved audio file: {file_path}.")

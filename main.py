@@ -10,8 +10,10 @@ from events import EventQueue, EventTypes, Event
 
 def setup():
     """Setup the machine."""
-    logging.basicConfig(filename="CrownPiBot.log", level=logging.DEBUG)
-    logging.getLogger().addHandler(logging.StreamHandler())
+    if (config.DEVELOPMENT):
+        logging.basicConfig(filename="CrownPiBot.log", level=logging.DEBUG)
+        logging.getLogger().addHandler(logging.StreamHandler())
+
     logging.debug("Setup started.")
     MachineBrain()
 
@@ -31,7 +33,10 @@ def process_queue():
         if event is not None:
             handle_event(event)
     # If the queue is empty, add an idle event to prevent the machine from freezing.
-    CrownBotBrain.event_queue.add_event(Event(EventTypes.MACHINE_IDLE))
+    if config.DEVELOPMENT:
+        CrownBotBrain.event_queue.add_event(Event(EventTypes.MACHINE_IDLE))
+    else:
+        CrownBotBrain.event_queue.add_event(Event(EventTypes.MACHINE_IDLE))
 
 
 def handle_event(event):
@@ -54,7 +59,7 @@ def handle_event(event):
         CrownBotBrain.handle_movement(event)
     elif type == EventTypes.MACHINE_IDLE:
         if (config.LEARNING):
-            choice = random.randint(0, 3)
+            choice = random.randint(0, 4)
             if (choice == 0):
                 CrownBotBrain.event_queue.add_event(
                     Event(EventTypes.SAY_RANDOM_MEMORY))
@@ -65,6 +70,9 @@ def handle_event(event):
             elif (choice == 3):
                 CrownBotBrain.event_queue.add_event(
                     Event(EventTypes.SAY_PRAISE_VAULT_TEC))
+            elif (choice == 4):
+                CrownBotBrain.event_queue.add_event(
+                    Event(EventTypes.INPUT_PIR_DETECTED))
         else:
             CrownBotBrain.vocalize_from_cache()
         CrownBotBrain.event_queue.add_event(

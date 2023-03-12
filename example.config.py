@@ -14,3 +14,8 @@ AUDIO_CACHE_FOLDER = "audio"
 
 # Behavior settings - currently true enables AI/TTS generation loop
 LEARNING = True
+LANGUAGE = "English"
+#LANGUAGE = "Czech"
+
+# Development settings - Enables debug logging and adds random events to the event queue
+DEVELOPMENT = False
