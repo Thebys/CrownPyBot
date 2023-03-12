@@ -283,7 +283,7 @@ class MachineBrain:
         self.wake_up = True
         self.event_queue.add_event(Event(EventTypes.INPUT_PIR_DETECTED))
 
-    def handle_movement(self):
+    def handle_movement(self, event):
         """Handle movement event from the EQ."""
         self.event_queue.add_event(Event(
             EventTypes.DIRECT_SPEECH, "I see movement in the infra red spectrum!"))
