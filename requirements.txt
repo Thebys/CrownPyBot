@@ -4,3 +4,5 @@ google-auth
 google-api-python-client
 google-cloud-texttospeech
 gpiozero
+openai
+tiktoken

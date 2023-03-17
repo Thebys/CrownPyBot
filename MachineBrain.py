@@ -6,7 +6,7 @@ import logging
 import config
 import pygame
 import cache
-import openai
+import crown_ai
 import platform
 import googletts
 import time
@@ -244,15 +244,26 @@ class MachineBrain:
                 prompt_input = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}{str(event.type)} You say:\n"
             else:
                 prompt_input = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}You say:\n"
-        newline = openai.crown_generate_text(prompt_input, 50)
+        newline = crown_ai.crown_gpt3_generate_text(prompt_input, 50)
         cache.get_or_create_entry(newline, self.getStatusObject(), event)
         self.vocalize_text_line(newline)
 
     def vocalize_random_memory(self, event=None):
         if self.online:
-            self.vocalize_new_random_memory(event)
+            # self.vocalize_new_random_memory(event)
+            self.chat_remember_random_memory(event)
         else:
             self.vocalize_from_cache()
+
+    def chat_remember_random_memory(self, event=None):
+        '''Try the new chat mode to remember a random memory.'''
+        self.conversation = crown_ai.crown_ai_conversation()
+        memory_text = ''
+        for message in self.conversation.get_messages():
+            if message['role'] == 'assistant':
+                memory_text += message['content'] + ' '                
+        cache.get_or_create_entry(memory_text, self.getStatusObject(), event)
+        self.vocalize_text_line(memory_text)
 
     def vocalize_new_random_memory(self, event=None):
         """Vocalize new random memory using prompt generator, OpenAI and Google TTS and store it to audio cache."""
@@ -261,7 +272,8 @@ class MachineBrain:
             prompt = f"{config.OPENAI_PROMPT_PROGRAM_CZECH}Scene: {self.set.value}{self.getStatus()}{PG.generate_random_memory_prompt(self.emotion.value)} You say:\n"
         else:
             prompt = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}{PG.generate_random_memory_prompt(self.emotion.value)} You say:\n"
-        memory_text = openai.crown_generate_text(prompt, 2000, 0.9, 0.65)
+        memory_text = crown_ai.crown_gpt3_generate_text(
+            prompt, 2000, 0.9, 0.65)
         cache.get_or_create_entry(memory_text, self.getStatusObject(), event)
         self.vocalize_text_line(memory_text)
 
@@ -272,7 +284,8 @@ class MachineBrain:
             prompt = f"{config.OPENAI_PROMPT_PROGRAM_CZECH}Scene: {self.set.value}{self.getStatus()}{PG.praise_vault_tec()} You say:\n"
         else:
             prompt = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}{PG.praise_vault_tec()} You say:\n"
-        praise_text = openai.crown_generate_text(prompt, 1200, 0.95, 0.35)
+        praise_text = crown_ai.crown_gpt3_generate_text(
+            prompt, 1200, 0.95, 0.35)
         self.vocalize_text_line(praise_text)
 
     def vocalize_direct(self, text, event=None):

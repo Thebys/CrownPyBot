@@ -57,7 +57,7 @@ def handle_event(event):
         CrownBotBrain.handle_movement(event)
     elif type == EventTypes.MACHINE_IDLE:
         if (config.LEARNING):
-            choice = random.randint(0, 2)
+            choice = 0  # random.randint(0, 2)
             if (choice == 0):
                 CrownBotBrain.event_queue.add_event(
                     Event(EventTypes.SAY_RANDOM_MEMORY))
@@ -74,7 +74,7 @@ def handle_event(event):
         else:
             CrownBotBrain.vocalize_from_cache()
         CrownBotBrain.event_queue.add_event(
-            Event(EventTypes.MACHINE_SLEEP, random.randint(10, 30)))
+            Event(EventTypes.MACHINE_SLEEP, random.randint(4, 8)))
     else:
         logging.debug(f"Unknown event: {event}")
 
