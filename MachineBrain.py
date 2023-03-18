@@ -118,19 +118,8 @@ class MachineBrain:
             logging.warn(
                 f"FS - Cache miss! The file {file_path} doesn't exists.")
             if (config.LANGUAGE == "Czech"):
-                energy_based_speaking_rate = 0.95
-                if self.energy_level == Energy.EXHAUSTED:
-                    energy_based_speaking_rate = 0.75
-                elif self.energy_level == Energy.TIRED:
-                    energy_based_speaking_rate = 0.85
-                elif self.energy_level == Energy.NORMAL:
-                    energy_based_speaking_rate = 0.95
-                elif self.energy_level == Energy.ENERGIZED:
-                    energy_based_speaking_rate = 1.15
-                elif self.energy_level == Energy.HYPER:
-                    energy_based_speaking_rate = 1.30
                 googletts.download_audio_czech(
-                    text_line, SpeakingRate=energy_based_speaking_rate)
+                    text_line, SpeakingRate=googletts.energy_enum_to_speaking_rate(self.energy_level))
             else:
                 googletts.download_audio(text_line)
 
@@ -147,16 +136,17 @@ class MachineBrain:
             PG = PromptGenerator()
             self.conversation = Conversation().with_default_messages()
             if choice == 0:
-                self.conversation = (PG.with_get_single_life_anecdote(self.conversation,
+                self.conversation = (PG.with_get_single_life_anecdote(self.conversation, self.emotion.value,
                                      96, None, Scenes.CT2023, self.getStatus()))
             elif choice == 1:
                 self.conversation = (PG.with_get_single_life_anecdote_with_random_props(self.conversation, self.emotion.value,
                                                                                         256, None, Scenes.CT2023, self.getStatus()))
             else:
-                self.conversation = (PG.with_get_single_vault_tec_praise(self.conversation,
+                self.conversation = (PG.with_get_single_vault_tec_praise(self.conversation, self.emotion.value,
                                                                          72, None, Scenes.CT2023, self.getStatus()))
 
-            self.conversation = self.conversation.with_message("user", "You continue in Czech: ")
+            self.conversation = self.conversation.with_message(
+                "user", "You continue in Czech: ")
             self.conversation = crown_ai.advance_conversation(
                 self.conversation)
 

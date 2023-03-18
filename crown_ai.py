@@ -3,7 +3,7 @@ import logging
 import config
 import openai
 
-def advance_conversation(Conversation, Max_Completion_Tokens=512, Temperature=0.25, Top_p=0.6):
+def advance_conversation(Conversation, Max_Completion_Tokens=1024, Temperature=0.25, Top_p=0.6):
     '''Return a new chat message from the AI model, based on the Conversation.'''
 
     openai.api_key = config.OPENAI_API_KEY
