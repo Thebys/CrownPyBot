@@ -95,7 +95,7 @@ class MachineBrain:
             self.emotion = random.choice(list(Emotions))
 
         logging.debug(
-            f"Machine Brain advanced to {self.getStatus()}")
+            f"MB - advanced to {self.getStatus()}")
 
     def brain_shuffle(self):
         """Shuffle the machine brain and set the machine to a random state."""
@@ -103,7 +103,7 @@ class MachineBrain:
         self.stress_level = random.choice(list(Stress))
         self.emotion = random.choice(list(Emotions))
         logging.debug(
-            f"Machine Brain shuffled to {self.getStatus()}")
+            f"MB - shuffled to {self.getStatus()}")
 
     def get_random_line_from_cache(self):
         """Get a random line from the audio cache."""
@@ -158,9 +158,10 @@ class MachineBrain:
         else:
             self.vocalize_from_cache()
 
-    def vocalize_direct(self, text, event=None):
+    def vocalize_direct(self, text, cache=True, event=None):
         """Vocalize a given line using Google TTS."""
-        cache.get_or_create_entry(text, self.getStatusObject(), event)
+        if (cache):
+            cache.get_or_create_entry(text, self.getStatusObject(), event)
         self.vocalize_text_line(text)
 
     def vocalize_current_time(self, event=None):
@@ -170,10 +171,10 @@ class MachineBrain:
         minutes = cd.strftime("%M")
         if (config.LANGUAGE == "Czech"):
             self.vocalize_direct(
-                f"Právě je {hours} hodin a {minutes} minut.", event)
+                f"Právě je {hours} hodin a {minutes} minut.", False, event)
         else:
             self.vocalize_direct(
-                f"Current time is {hours} hours and {minutes} minutes.", event)
+                f"Current time is {hours} hours and {minutes} minutes.", False, event)
 
     def check_connection_is_online(self):
         """Check if the internet connection is online."""
