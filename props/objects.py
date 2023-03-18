@@ -43,6 +43,23 @@ class Objects(Enum):
     NEWSPAPER = "newspaper"
     TV = "TV"
     RADIO = "radio"
+    BUTTON = "button"
+    TISSUE_BOX = "tissue box"
+    STICKY_NOTE = "sticky note"
+    YO_YO = "yo-yo"
+    HAMMER = "hammer"
+    SCREWDRIVER = "screwdriver"
+    WRENCH = "wrench"
+    CAN_OPENER = "can opener"
+    TOOTHBRUSH = "toothbrush"
+    SOAP = "soap"
+    TOWEL = "towel"
+    SHOELACE = "shoelace"
+    POGO_STICK = "pogo stick"
+    UNICYCLE = "unicycle"
+    FLY_SWATTER = "fly swatter"
+    FISHING_POLE = "fishing pole"
+
 
     def __str__(self) -> str:
         return self.value
