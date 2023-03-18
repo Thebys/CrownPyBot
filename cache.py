@@ -16,7 +16,7 @@ def text_to_hash(text):
 def select_random_text():
     """Select a random text line from the database file."""
     # Read the data from the database file
-    with open(Path(config.DATABASE_FILE), "r") as f:
+    with open(Path(config.DATABASE_FILE), "r", encoding="utf-8") as f:
         data = json.load(f)
 
     # Select a random text line
@@ -32,7 +32,7 @@ def create_entry(text, state=None, event=None):
 
     # Read current data from database file
     try:
-        with open(Path(config.DATABASE_FILE), "r") as f:
+        with open(Path(config.DATABASE_FILE), "r", encoding="utf-8") as f:
             data = json.load(f)
     except:
         data = []
@@ -76,7 +76,7 @@ def get_or_create_entry(text, state=None, event=None):
     """Get an entry from the database file or create a new one if it doesn't exist."""
     # Read current data from database file
     try:
-        with open(Path(config.DATABASE_FILE), "r") as f:
+        with open(Path(config.DATABASE_FILE), "r", encoding="utf-8") as f:
             data = json.load(f)
     except:
         data = []

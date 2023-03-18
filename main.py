@@ -54,7 +54,7 @@ def handle_event(event):
         CrownBotBrain.handle_movement(event)
     elif type == EventTypes.MACHINE_IDLE:
         if (config.LEARNING):
-            choice = 0  # random.randint(0, 2)
+            choice = random.randint(0, 2)
             if (choice == 0):
                 CrownBotBrain.event_queue.add_event(
                     Event(EventTypes.SAY_RANDOM))

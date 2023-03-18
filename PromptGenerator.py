@@ -39,7 +39,7 @@ class PromptGenerator:
     def with_get_single_life_anecdote(self, Conversation, Emotion, Word_Count=128, Context=None, Scene=None, Status=None) -> 'Conversation':
         Conversation.with_default_messages(Context, Scene, Status)
         Conversation.with_message(
-            "user", f"Tell a shorter than {Word_Count} word {Emotion} anecdote from you life.")
+            "user", f"Tell a shorter than {Word_Count} word {Emotion} memory, anecdote or bonmote from your life.")
         return Conversation
 
     def with_get_single_life_anecdote_with_random_props(self, Conversation, Emotion, Word_Count=256, Context=None, Scene=None, Status=None) -> 'Conversation':
