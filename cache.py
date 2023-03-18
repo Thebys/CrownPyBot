@@ -66,8 +66,8 @@ def create_entry(text, state=None, event=None):
     data.append(entry)
 
     # Write updated data to database file
-    with open(Path(config.DATABASE_FILE), "w") as f:
-        json.dump(data, f)
+    with open(Path(config.DATABASE_FILE), "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False)
 
     return entry
 

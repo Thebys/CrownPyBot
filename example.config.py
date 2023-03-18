@@ -4,8 +4,8 @@ OPENAI_API_COMPLETIONS_ENDPOINT = "https://api.openai.com/v1/completions"
 OPENAI_API_CHAT_ENDPOINT = "https://api.openai.com/v1/chat/completions"
 OPENAI_COMPLETIONS_MODEL = "text-davinci-003"
 OPENAI_CHAT_MODEL = "gpt-3.5-turbo"
+OPENAI_CHAT_MODEL_MAX_TOKENS = 4096
 # Google Text-to-Speech API configuration
-GOOGLE_TTS_API_KEY = "your_google_tts_api_key_here"
 GOOGLE_TTS_API_ENDPOINT = "https://texttospeech.googleapis.com/v1/text:synthesize"
 GOOGLE_KEYFILE_PATH = "keyfile.json"
 # Database configuration

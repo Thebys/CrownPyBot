@@ -11,7 +11,7 @@ class EventTypes(Enum):
     MACHINE_IDLE = auto()
     DIRECT_SPEECH = auto()
     SAY_TIME = auto()
-    SAY_RANDOM_MEMORY = auto()
+    SAY_RANDOM = auto()
     SAY_PRAISE_VAULT_TEC = auto()
     MACHINE_BORED = auto()
     MACHINE_ATTENTION_SEEKING = auto()
@@ -35,7 +35,7 @@ class EventTypes(Enum):
             return "The machine speaks."
         elif self == EventTypes.SAY_TIME:
             return "The machine says the current time."
-        elif self == EventTypes.SAY_RANDOM_MEMORY:
+        elif self == EventTypes.SAY_RANDOM:
             return "The machine says a random memory."
         elif self == EventTypes.SAY_PRAISE_VAULT_TEC:
             return "The machine praises Vault-Tec."

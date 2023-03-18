@@ -10,7 +10,13 @@ import crown_ai
 import platform
 import googletts
 import time
-import PromptGenerator
+from promptgenerator import PromptGenerator
+from conversation import Conversation
+from props.scenes import Scenes
+from states.emotions import Emotions
+from states.behaviors import Behavior
+from states.energy import Energy
+from states.stress import Stress
 from datetime import datetime
 from events import EventQueue, EventTypes, Event
 from gpiozero import MotionSensor
@@ -19,103 +25,6 @@ from gpiozero.pins.mock import MockFactory
 
 # This set of classes is the brain of the machine. It is responsible for the machine's state and behavior.
 # The MachineBrain is a singleton class, so there can only be one instance of it at a time.
-
-
-class EnergyLevel(Enum):
-    """Energy level palette of the machine."""
-    EXHAUSTED = 1
-    TIRED = 2
-    NORMAL = 3
-    ENERGIZED = 4
-    HYPER = 5
-
-    def _missing_(value):
-        """Return the closest energy level for a given value when out of range."""
-        if value < 1:
-            return EnergyLevel.EXHAUSTED
-        else:
-            return EnergyLevel.HYPER
-
-    def __str__(self):
-        """Return a string representation of the energy level."""
-        if self == EnergyLevel.EXHAUSTED:
-            return "exhausted"
-        elif self == EnergyLevel.TIRED:
-            return "tired"
-        elif self == EnergyLevel.NORMAL:
-            return "normal"
-        elif self == EnergyLevel.ENERGIZED:
-            return "energized"
-        else:
-            return "HYPER"
-
-
-class StressLevel(Enum):
-    """Stress level palette of the machine."""
-    CALM = 1
-    NEUTRAL = 2
-    NERVOUS = 3
-    TENSE = 4
-    STRESSED = 5
-    RAGING = 6
-
-    def _missing_(value):
-        """Return the closest stress level for a given value when out of range."""
-        if value < 1:
-            return StressLevel.CALM
-        elif value > 6:
-            return StressLevel.RAGING
-        else:
-            return StressLevel(value)
-
-    def __str__(self):
-        """Return a string representation of the stress level."""
-        if self == StressLevel.CALM:
-            return "calm"
-        elif self == StressLevel.NEUTRAL:
-            return "neutral"
-        elif self == StressLevel.NERVOUS:
-            return "nervous"
-        elif self == StressLevel.TENSE:
-            return "tense"
-        elif self == StressLevel.STRESSED:
-            return "stressed"
-        else:
-            return "raging"
-
-
-class Emotion(Enum):
-    """Emotion palette of the machine."""
-    Excited = "excited"
-    Surprised = "surprised"
-    Happy = "happy"
-    Content = "content"
-    Amused = "amused"
-    Nostalgic = "nostalgic"
-    Angry = "angry"
-    Sad = "sad"
-    Fearful = "fearful"
-    Anxious = "anxious"
-    Bored = "bored"
-    Confused = "confused"
-    Disgusted = "disgusted"
-    Envious = "envious"
-    Frustrated = "frustrated"
-
-
-class BehaviorMode(Enum):
-    """Available behavior modes the machine can run in."""
-    CALM = "calm"
-    NORMAL = "normal"
-    CRAZY = "crazy"
-
-
-class Set(Enum):
-    """Available scene sets the machine can run in."""
-    HOME_LAB = "Vintage 1980 Z80 based Crown gambling machine sits in mysterious hackers home lab and being cared for, getting a new life."
-    FURRY_HACKATHON = "Original vintage Th. Bergmann Automatenbau 1980 Crown gambling machine comes to life at a furry hackathon after collecting dust for 30 years."
-    POSTAPOCALYPTIC = "How this vintage Crown gambling machine survived the apocalypse remains a mystery, yet here it is."
-    CT2023 = "Fortune and mystery brought you to Cybertown 2023 LARP and music festival. You roleplay a vending machine and are a proud property of Vault tec faction."
 
 
 class MachineBrain:
@@ -135,19 +44,19 @@ class MachineBrain:
 
     def getStatus(self):
         """Returns state of the machine in form of prompt-compatible text."""
-        return f"\nStatus: energy - {self.energy_level.name.lower()}, stress - {self.stress_level.name.lower()}, emotion - {self.emotion.value}.\n"
+        return f"Your status is: energy - {self.energy_level.name.lower()}, stress - {self.stress_level.name.lower()}, emotion - {self.emotion.value}."
 
     def play_crown_sound(self):
         """Play the appropriate Crown sound intro based on the energy level."""
-        if (self.energy_level == EnergyLevel.EXHAUSTED):
+        if (self.energy_level == Energy.EXHAUSTED):
             self.play_audio_file(Path("media/Crown Intro 050 pct.wav"))
-        elif (self.energy_level == EnergyLevel.TIRED):
+        elif (self.energy_level == Energy.TIRED):
             self.play_audio_file(Path("media/Crown Intro 050 pct.wav"))
-        elif (self.energy_level == EnergyLevel.NORMAL):
+        elif (self.energy_level == Energy.NORMAL):
             self.play_audio_file(Path("media/Crown Intro.wav"))
-        elif (self.energy_level == EnergyLevel.ENERGIZED):
+        elif (self.energy_level == Energy.ENERGIZED):
             self.play_audio_file(Path("media/Crown Intro 140 pct.wav"))
-        elif (self.energy_level == EnergyLevel.HYPER):
+        elif (self.energy_level == Energy.HYPER):
             self.play_audio_file(Path("media/Crown Intro 200 pct.wav"))
         else:
             self.play_audio_file(Path("media/Crown Intro.wav"))
@@ -169,30 +78,30 @@ class MachineBrain:
 
     def advance(self):
         """Advance the machine state by one step based on selected behavior mode."""
-        if (self.behavior_mode == BehaviorMode.CRAZY):
+        if (self.behavior_mode == Behavior.CRAZY):
             self.brain_shuffle()
-        elif (self.behavior_mode == BehaviorMode.NORMAL):
+        elif (self.behavior_mode == Behavior.NORMAL):
             self.brain_advance()
         else:
             return
 
     def brain_advance(self):
         """Advance the machine brain one step."""
-        self.energy_level = EnergyLevel(
+        self.energy_level = Energy(
             self.energy_level.value + random.randint(-1, 1))
-        self.stress_level = StressLevel(
+        self.stress_level = Stress(
             self.stress_level.value + random.randint(-1, 1))
         if (random.randint(0, 9) < 3):  # 30% chance of emotion change
-            self.emotion = random.choice(list(Emotion))
+            self.emotion = random.choice(list(Emotions))
 
         logging.debug(
             f"Machine Brain advanced to {self.getStatus()}")
 
     def brain_shuffle(self):
         """Shuffle the machine brain and set the machine to a random state."""
-        self.energy_level = random.choice(list(EnergyLevel))
-        self.stress_level = random.choice(list(StressLevel))
-        self.emotion = random.choice(list(Emotion))
+        self.energy_level = random.choice(list(Energy))
+        self.stress_level = random.choice(list(Stress))
+        self.emotion = random.choice(list(Emotions))
         logging.debug(
             f"Machine Brain shuffled to {self.getStatus()}")
 
@@ -210,15 +119,15 @@ class MachineBrain:
                 f"FS - Cache miss! The file {file_path} doesn't exists.")
             if (config.LANGUAGE == "Czech"):
                 energy_based_speaking_rate = 0.95
-                if self.energy_level == EnergyLevel.EXHAUSTED:
+                if self.energy_level == Energy.EXHAUSTED:
                     energy_based_speaking_rate = 0.75
-                elif self.energy_level == EnergyLevel.TIRED:
+                elif self.energy_level == Energy.TIRED:
                     energy_based_speaking_rate = 0.85
-                elif self.energy_level == EnergyLevel.NORMAL:
+                elif self.energy_level == Energy.NORMAL:
                     energy_based_speaking_rate = 0.95
-                elif self.energy_level == EnergyLevel.ENERGIZED:
+                elif self.energy_level == Energy.ENERGIZED:
                     energy_based_speaking_rate = 1.15
-                elif self.energy_level == EnergyLevel.HYPER:
+                elif self.energy_level == Energy.HYPER:
                     energy_based_speaking_rate = 1.30
                 googletts.download_audio_czech(
                     text_line, SpeakingRate=energy_based_speaking_rate)
@@ -232,61 +141,32 @@ class MachineBrain:
         cache_line = cache.select_random_text()
         self.vocalize_text_line(cache_line)
 
-    def vocalize_new(self, event=None):
-        """Vocalize a new line using OpenAI and Google TTS and store it to audio cache."""
-        if config.LANGUAGE == "Czech":
-            if event is not None:
-                prompt_input = f"{config.OPENAI_PROMPT_PROGRAM_CZECH}Scene: {self.set.value}{self.getStatus()}{str(event.type)} You say:\n"
-            else:
-                prompt_input = f"{config.OPENAI_PROMPT_PROGRAM_CZECH}Scene: {self.set.value}{self.getStatus()}You say:\n"
-        else:
-            if event is not None:
-                prompt_input = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}{str(event.type)} You say:\n"
-            else:
-                prompt_input = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}You say:\n"
-        newline = crown_ai.crown_gpt3_generate_text(prompt_input, 50)
-        cache.get_or_create_entry(newline, self.getStatusObject(), event)
-        self.vocalize_text_line(newline)
-
-    def vocalize_random_memory(self, event=None):
+    def vocalize_random(self, event=None):
         if self.online:
-            # self.vocalize_new_random_memory(event)
-            self.chat_remember_random_memory(event)
+            choice = random.randint(0, 2)
+            PG = PromptGenerator()
+            self.conversation = Conversation().with_default_messages()
+            if choice == 0:
+                self.conversation = (PG.with_get_single_life_anecdote(self.conversation,
+                                     96, None, Scenes.CT2023, self.getStatus()))
+            elif choice == 1:
+                self.conversation = (PG.with_get_single_life_anecdote_with_random_props(self.conversation, self.emotion.value,
+                                                                                        256, None, Scenes.CT2023, self.getStatus()))
+            else:
+                self.conversation = (PG.with_get_single_vault_tec_praise(self.conversation,
+                                                                         72, None, Scenes.CT2023, self.getStatus()))
+
+            self.conversation = self.conversation.with_message("user", "You continue in Czech: ")
+            self.conversation = crown_ai.advance_conversation(
+                self.conversation)
+
+            memory_text = self.conversation.get_last_assistant_message()
+            logging.debug(f"MB - New Text Line: {memory_text}")
+            cache.get_or_create_entry(
+                memory_text, self.getStatusObject(), event)
+            self.vocalize_text_line(memory_text)
         else:
             self.vocalize_from_cache()
-
-    def chat_remember_random_memory(self, event=None):
-        '''Try the new chat mode to remember a random memory.'''
-        self.conversation = crown_ai.crown_ai_conversation()
-        memory_text = ''
-        for message in self.conversation.get_messages():
-            if message['role'] == 'assistant':
-                memory_text += message['content'] + ' '                
-        cache.get_or_create_entry(memory_text, self.getStatusObject(), event)
-        self.vocalize_text_line(memory_text)
-
-    def vocalize_new_random_memory(self, event=None):
-        """Vocalize new random memory using prompt generator, OpenAI and Google TTS and store it to audio cache."""
-        PG = PromptGenerator.PromptGenerator()
-        if config.LANGUAGE == "Czech":
-            prompt = f"{config.OPENAI_PROMPT_PROGRAM_CZECH}Scene: {self.set.value}{self.getStatus()}{PG.generate_random_memory_prompt(self.emotion.value)} You say:\n"
-        else:
-            prompt = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}{PG.generate_random_memory_prompt(self.emotion.value)} You say:\n"
-        memory_text = crown_ai.crown_gpt3_generate_text(
-            prompt, 2000, 0.9, 0.65)
-        cache.get_or_create_entry(memory_text, self.getStatusObject(), event)
-        self.vocalize_text_line(memory_text)
-
-    def vocalize_praise_vault_tec(self, event=None):
-        """Vocalize a praise for Vault-Tec using Google TTS."""
-        PG = PromptGenerator.PromptGenerator()
-        if config.LANGUAGE == "Czech":
-            prompt = f"{config.OPENAI_PROMPT_PROGRAM_CZECH}Scene: {self.set.value}{self.getStatus()}{PG.praise_vault_tec()} You say:\n"
-        else:
-            prompt = f"{config.OPENAI_PROMPT_PROGRAM}Scene: {self.set.value}{self.getStatus()}{PG.praise_vault_tec()} You say:\n"
-        praise_text = crown_ai.crown_gpt3_generate_text(
-            prompt, 1200, 0.95, 0.35)
-        self.vocalize_text_line(praise_text)
 
     def vocalize_direct(self, text, event=None):
         """Vocalize a given line using Google TTS."""
@@ -329,14 +209,14 @@ class MachineBrain:
         else:
             self.pir = MotionSensor(4)  # GPIO pin 4 (physical pin 7)
         self.pir.when_motion = self.motion_detected
-        self.behavior_mode = BehaviorMode.NORMAL
+        self.behavior_mode = Behavior.NORMAL
         self.wake_up = False
         self.recent_motion = datetime.now()
         self.online = self.check_connection_is_online()
-        self.energy_level = EnergyLevel.NORMAL
-        self.stress_level = StressLevel.CALM
-        self.emotion = Emotion.Nostalgic
-        self.set = Set.CT2023
+        self.energy_level = Energy.NORMAL
+        self.stress_level = Stress.CALM
+        self.emotion = Emotions.Nostalgic
+        self.set = Scenes.CT2023
         if self.online:
             self.startup_online()
         else:

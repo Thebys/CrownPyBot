@@ -3,7 +3,6 @@ import random
 import time
 import config
 import MachineBrain
-from MachineBrain import Set
 from MachineBrain import MachineBrain
 from events import EventQueue, EventTypes, Event
 
@@ -49,10 +48,8 @@ def handle_event(event):
         CrownBotBrain.vocalize_direct(event.data, event)
     elif type == EventTypes.SAY_TIME:
         CrownBotBrain.vocalize_current_time(event)
-    elif type == EventTypes.SAY_RANDOM_MEMORY:
-        CrownBotBrain.vocalize_random_memory(event)
-    elif type == EventTypes.SAY_PRAISE_VAULT_TEC:
-        CrownBotBrain.vocalize_praise_vault_tec(event)
+    elif type == EventTypes.SAY_RANDOM:
+        CrownBotBrain.vocalize_random(event)
     elif type == EventTypes.INPUT_PIR_DETECTED:
         CrownBotBrain.handle_movement(event)
     elif type == EventTypes.MACHINE_IDLE:
@@ -60,15 +57,12 @@ def handle_event(event):
             choice = 0  # random.randint(0, 2)
             if (choice == 0):
                 CrownBotBrain.event_queue.add_event(
-                    Event(EventTypes.SAY_RANDOM_MEMORY))
+                    Event(EventTypes.SAY_RANDOM))
             elif (choice == 1):
-                CrownBotBrain.event_queue.add_event(
-                    Event(EventTypes.SAY_PRAISE_VAULT_TEC))
-            elif (choice == 2):
                 CrownBotBrain.event_queue.add_event(Event(EventTypes.SAY_TIME))
-            elif (choice == 3):
+            elif (choice == 2):
                 CrownBotBrain.vocalize_from_cache()
-            elif (choice == 4):
+            elif (choice == 3):
                 CrownBotBrain.event_queue.add_event(
                     Event(EventTypes.INPUT_PIR_DETECTED))
         else:
