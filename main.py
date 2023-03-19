@@ -1,94 +1,54 @@
 import logging
-import random
 import time
 import config
+import multiprocessing
 import MachineBrain
 from TelegramBot import CrownTelegramBot
 from MachineBrain import MachineBrain
 from events import EventQueue, EventTypes, Event
 
 
-
-def setup():
-    """Setup the machine."""
+def main():
+    """Main entry point of the program. Imagine setup() and loop() in Arduino."""
     if (config.DEVELOPMENT):
         logging.basicConfig(filename="CrownPiBot.log", level=logging.DEBUG)
         logging.getLogger().addHandler(logging.StreamHandler())
+    logging.debug("PC - Setup started.")
 
-    logging.debug("Setup started.")
+    # Create Crown <> TG communication queue
+    queue = multiprocessing.Queue()
 
-    CTB = CrownTelegramBot()
-    CTB.init_telegram_bot()
+    crown_brain = MachineBrain(queue)
+    telegram_bot = CrownTelegramBot()
+    telegram_bot.init_telegram_bot(queue)
+    logging.debug("PC - Setup finished.")
+    loop(crown_brain, telegram_bot, queue)
 
-    MachineBrain()
-    logging.debug("Setup finished.")
 
-
-def loop():
+def loop(CrownBrain, TelegramBot, CrownTelegramQueue):
     """Loop the machine's life."""
     while (True):
-        CTB = CrownTelegramBot()
-        if(CTB.enabled):
-            CTB.check_telegram_bot()
+        # Check if the Telegram bot is still running.
+        if (TelegramBot.enabled):
+            TelegramBot.check_telegram_bot()
         
-        process_queue()
-        time.sleep(0.1)  # Safety net to prevent CPU hogging
+        # Check if there are any events in the CrownTelegramQueue
+        while not CrownTelegramQueue.empty():
+            event = CrownTelegramQueue.get()
+            CrownBrain.event_queue.add_event(event)
+        
+        # Handle events from the queue.
+        while not CrownBrain.event_queue.empty():
+            event = CrownBrain.event_queue.get_event_to_handle()
+            if event is not None:
+                CrownBrain.handle_event(event)
+        # Advance the machine's state, maybew could be moved.
+        CrownBrain.advance()
+        time.sleep(1)
+        # If the queue is empty, add an idle event to prevent the machine from freezing.
+        CrownBrain.event_queue.add_event(Event(EventTypes.MACHINE_IDLE))
 
 
-def process_queue():
-    """Process the machine's event queue."""
-    CrownBotBrain = MachineBrain.instance
-    while not CrownBotBrain.event_queue.empty():
-        event = CrownBotBrain.event_queue.get_event_to_handle()
-        if event is not None:
-            handle_event(event)
-            CrownBotBrain.advance()
-    # If the queue is empty, add an idle event to prevent the machine from freezing.
-    CrownBotBrain.event_queue.add_event(Event(EventTypes.MACHINE_IDLE))
-
-
-def handle_event(event):
-    """Handle an event."""
-    type = event.type
-    CrownBotBrain = MachineBrain.instance
-    if type == EventTypes.MACHINE_STARTUP:
-        CrownBotBrain.startup()
-    elif type == EventTypes.MACHINE_SLEEP:
-        CrownBotBrain.sleep(event.data)
-    elif type == EventTypes.DIRECT_SPEECH:
-        CrownBotBrain.vocalize_direct(event.data, event)
-    elif type == EventTypes.SAY_TIME:
-        CrownBotBrain.vocalize_current_time(event)
-    elif type == EventTypes.SAY_RANDOM:
-        CrownBotBrain.vocalize_random(event)
-    elif type == EventTypes.INPUT_PIR_DETECTED:
-        CrownBotBrain.handle_movement(event)
-    elif type == EventTypes.MACHINE_IDLE:
-        if (config.LEARNING):
-            choice = random.randint(0, 2)
-            if (choice == 0):
-                CrownBotBrain.event_queue.add_event(
-                    Event(EventTypes.SAY_RANDOM))
-            elif (choice == 1):
-                CrownBotBrain.event_queue.add_event(Event(EventTypes.SAY_TIME))
-            elif (choice == 2):
-                CrownBotBrain.vocalize_from_cache()
-            elif (choice == 3):
-                CrownBotBrain.event_queue.add_event(
-                    Event(EventTypes.INPUT_PIR_DETECTED))
-        else:
-            CrownBotBrain.vocalize_from_cache()
-        CrownBotBrain.event_queue.add_event(
-            Event(EventTypes.MACHINE_SLEEP, random.randint(10, 180)))
-    else:
-        logging.debug(f"Unknown event: {event}")
-
-
-def main():
-    """Main entry point of the program."""
-    setup()
-    loop()
-
-
+ # Actually run the program...
 if __name__ == "__main__":
     main()

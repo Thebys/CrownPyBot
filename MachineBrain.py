@@ -5,7 +5,7 @@ import random
 import logging
 import config
 import pygame
-import cache
+import AudioCache
 import crown_ai
 import platform
 import googletts
@@ -32,8 +32,9 @@ class MachineBrain:
     instance = None
     event_queue = None
     behavior_mode = None
+    crown_telegram_queue = None
 
-    def __new__(cls):
+    def __new__(cls, Queue):
         if cls.instance is None:
             cls.instance = super().__new__(cls)
         return cls.instance
@@ -107,11 +108,11 @@ class MachineBrain:
 
     def get_random_line_from_cache(self):
         """Get a random line from the audio cache."""
-        cache_line = cache.select_random_text(Path(config.DATABASE_FILE))
+        cache_line = AudioCache.select_random_text(Path(config.DATABASE_FILE))
         return cache_line
 
     def vocalize_text_line(self, text_line):
-        file_name = cache.text_to_hash(text_line)+".wav"
+        file_name = AudioCache.text_to_hash(text_line)+".wav"
         logging.debug(f"FS - Attempting cached playback of {file_name}.")
         file_path = Path(config.AUDIO_CACHE_FOLDER, file_name)
         if not (file_path.is_file()):
@@ -127,7 +128,7 @@ class MachineBrain:
 
     def vocalize_from_cache(self):
         """Vocalize a random line from the JSON/audio cache."""
-        cache_line = cache.select_random_text()
+        cache_line = AudioCache.select_random_text()
         self.vocalize_text_line(cache_line)
 
     def vocalize_random(self, event=None):
@@ -152,7 +153,7 @@ class MachineBrain:
 
             memory_text = self.conversation.get_last_assistant_message()
             logging.debug(f"MB - New Text Line: {memory_text}")
-            cache.get_or_create_entry(
+            AudioCache.get_or_create_entry(
                 memory_text, self.getStatusObject(), event)
             self.vocalize_text_line(memory_text)
         else:
@@ -161,7 +162,7 @@ class MachineBrain:
     def vocalize_direct(self, text, cache=True, event=None):
         """Vocalize a given line using Google TTS."""
         if (cache):
-            cache.get_or_create_entry(text, self.getStatusObject(), event)
+            AudioCache.get_or_create_entry(text, self.getStatusObject(), event)
         self.vocalize_text_line(text)
 
     def vocalize_current_time(self, event=None):
@@ -257,10 +258,48 @@ class MachineBrain:
             else:
                 time.sleep(1)
 
-    def __init__(self):
+    def __init__(self, CrownTelegramQueue):
         """Initialize the machine brain."""
+        self.crown_telegram_queue = CrownTelegramQueue
         self.event_queue = EventQueue()
         self.event_queue.add_event(Event(EventTypes.MACHINE_STARTUP))
         pygame.mixer.init()
-        pygame.mixer.music.set_volume(0.5)
+        pygame.mixer.music.set_volume(0.25)
         logging.debug("Machine Brain initialized.")
+
+    def handle_event(self, event):
+        """Handle an event."""
+        type = event.type
+
+        if type == EventTypes.MACHINE_STARTUP:
+            self.startup()
+        elif type == EventTypes.MACHINE_SLEEP:
+            self.sleep(event.data)
+        elif type == EventTypes.DIRECT_SPEECH:
+            self.vocalize_direct(event.data, event)
+        elif type == EventTypes.SAY_TIME:
+            self.vocalize_current_time(event)
+        elif type == EventTypes.SAY_RANDOM:
+            self.vocalize_random(event)
+        elif type == EventTypes.INPUT_PIR_DETECTED:
+            self.handle_movement(event)
+        elif type == EventTypes.MACHINE_IDLE:
+            if (config.LEARNING):
+                choice = random.randint(0, 2)
+                if (choice == 0):
+                    self.event_queue.add_event(
+                        Event(EventTypes.SAY_RANDOM))
+                elif (choice == 1):
+                    self.event_queue.add_event(
+                        Event(EventTypes.SAY_TIME))
+                elif (choice == 2):
+                    self.vocalize_from_cache()
+                elif (choice == 3):
+                    self.event_queue.add_event(
+                        Event(EventTypes.INPUT_PIR_DETECTED))
+            else:
+                self.vocalize_from_cache()
+            self.event_queue.add_event(
+                Event(EventTypes.MACHINE_SLEEP, random.randint(10, 180)))
+        else:
+            logging.debug(f"Unknown event: {event}")

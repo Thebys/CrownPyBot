@@ -1,6 +1,6 @@
 import config
 import logging
-import cache
+import AudioCache
 import os
 from pathlib import Path
 from google.cloud import texttospeech
@@ -37,7 +37,7 @@ def download_audio(Prompt, LangCode="de-DE", VoiceName="de-DE-Wavenet-E", Pitch=
         input=synthesis_input, voice=voice, audio_config=audio_config
     )
 
-    file_name = cache.text_to_hash(Prompt) + ".wav"
+    file_name = AudioCache.text_to_hash(Prompt) + ".wav"
     file_path = Path(config.AUDIO_CACHE_FOLDER, file_name).resolve()
 
     with open(file_path, "wb") as out:
@@ -61,7 +61,7 @@ def download_audio_czech(Prompt, LangCode="cs-CZ", VoiceName="cs-CZ-Wavenet-A", 
         input=synthesis_input, voice=voice, audio_config=audio_config
     )
 
-    file_name = cache.text_to_hash(Prompt) + ".wav"
+    file_name = AudioCache.text_to_hash(Prompt) + ".wav"
     file_path = Path(config.AUDIO_CACHE_FOLDER, file_name).resolve()
 
     with open(file_path, "wb") as out:
