@@ -15,53 +15,48 @@ A talking machine project based on a vintage 1980 Th. Bergmann Automatenbau Crow
 
 1. Clone the repository to your Raspberry Pi:
 
-    git clone https://github.com/your_username/CrownPiBot.git
+    `git clone https://github.com/your_username/CrownPiBot.git`
 
 2. Install the required packages:
 
-    pip install -r requirements.txt
+    `pip install -r requirements.txt`
 
 3. Replace the placeholder API keys in `config.py` with your own API keys.
 
 4. Run the program:
 
-    python main.py
+    `python main.py`
 
 
-## Autostart
+### Autostart
 
 - Run the bot at system startup as a service: https://medium.com/@benmorel/creating-a-linux-service-with-systemd-611b5c8b91d6
 
-## Optional
+### Optional
 
 - Check this guide if you have a need for BT audio: https://gist.github.com/actuino/9548329d1bba6663a63886067af5e4cb
 
 
 ## Roadmap / Tech tree
-    +---------------------+     +---------------------+     +---------------------+     +---------------------+
-    |                     |     |                     |     |                     |     |                     |
-    |      OG Hardware    |     |   New Hardware      |     |  CrownPyBot Project |     |   Audio Library     |
-    |                     |     |                     |     |                     |     |                     |
-    +---------------------+     +---------------------+     +---------------------+     +---------------------+
-             ↓                            ↓                            ↓                            ↓
-    +---------------------+     +---------------------+     +---------------------+     +---------------------+
-    |                     |     |                     |     |                     |     |                     |
-    | Original/Parasite   |     |     Add PIR         |     |   Develop Self-     |     |   Improve Audio     |
-    |     Awareness       |     |     Sensor          |     |  Propelled Machine  |     |      Database       |
-    |                     |     |                     |     |         Loop        |     |                     |
-    |---------------------|     |---------------------|     |---------------------|     |---------------------|
-    |                     |     |                     |     |                     |     |                     |
-    | Read Original       |     |    Add Microphone   |     |   Develop Audio     |     | Add Brain State     |
-    |  Buttons Input      |     |                     |     |        Library      |     |  Metadata to Audio  |
-    |                     |     |                     |     |                     |     |    Cache Records    |
-    |---------------------|     |---------------------|     |---------------------|     |---------------------|
-    |                     |     |                     |     |                     |     |                     |
-    |Read Munzspeicher and|     |     Add RPI         |     | Develop Storytelling|     |  Improve Offline    |
-    | Sonderspiele        |     |     Camera          |     |         Mode        |     |    Functionality    |
-    |       Numbers       |     |                     |     |                     |     |                     |
-    |---------------------|     |---------------------|     |---------------------|     |---------------------|
-    |                     |     |                     |     |                     |     |                     |
-    |  Connect Parasite   |     |  Add LED/Matrix     |     |                     |     |Enable User-Created  |
-    |    to Amplifier     |     |      Display        |     |                     |     |     Audio Content   |
-    |                     |     |                     |     |                     |     |                     |
-    +---------------------+     +---------------------+     +---------------------+     +---------------------+
+
+### OG Hardware
+
+- Connect Parasite to original audio amplifier [WIP]
+- Original / parasite mode switch / awareness
+- Read Munzspeicher and Sonderspiele
+- Read and handle original buttons
+
+### New Hardware
+
+- Add PIR Sensor [WIP]
+- Add Microphone
+- Add RPI Camera
+- Add LEDs, display or terminal
+
+### CrownPyBot RPi Project
+
+- Add Telegram bot [WIP]
+- Develop entertaining self propelled machine loop [WIP]
+- Extend story telling capabilities
+- Extend audio / scenario / content / props ...
+- Web interface, weather, location, ...?
