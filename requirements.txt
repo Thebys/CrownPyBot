@@ -6,3 +6,4 @@ google-cloud-texttospeech
 gpiozero
 openai
 tiktoken
+python-telegram-bot

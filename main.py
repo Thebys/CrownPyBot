@@ -3,8 +3,10 @@ import random
 import time
 import config
 import MachineBrain
+from TelegramBot import CrownTelegramBot
 from MachineBrain import MachineBrain
 from events import EventQueue, EventTypes, Event
+
 
 
 def setup():
@@ -14,12 +16,21 @@ def setup():
         logging.getLogger().addHandler(logging.StreamHandler())
 
     logging.debug("Setup started.")
+
+    CTB = CrownTelegramBot()
+    CTB.init_telegram_bot()
+
     MachineBrain()
+    logging.debug("Setup finished.")
 
 
 def loop():
     """Loop the machine's life."""
     while (True):
+        CTB = CrownTelegramBot()
+        if(CTB.enabled):
+            CTB.check_telegram_bot()
+        
         process_queue()
         time.sleep(0.1)  # Safety net to prevent CPU hogging
 
@@ -68,7 +79,7 @@ def handle_event(event):
         else:
             CrownBotBrain.vocalize_from_cache()
         CrownBotBrain.event_queue.add_event(
-            Event(EventTypes.MACHINE_SLEEP, random.randint(4, 8)))
+            Event(EventTypes.MACHINE_SLEEP, random.randint(10, 180)))
     else:
         logging.debug(f"Unknown event: {event}")
 

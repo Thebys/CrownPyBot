@@ -8,6 +8,10 @@ OPENAI_CHAT_MODEL_MAX_TOKENS = 4096
 # Google Text-to-Speech API configuration
 GOOGLE_TTS_API_ENDPOINT = "https://texttospeech.googleapis.com/v1/text:synthesize"
 GOOGLE_KEYFILE_PATH = "keyfile.json"
+
+# Telegram Bot API configuration
+TG_BOT_TOKEN =  "your_telegram_bot_token_here"
+
 # Database configuration
 DATABASE_FILE = "database/cache.json"
 
