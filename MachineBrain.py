@@ -29,6 +29,7 @@ from gpiozero.pins.mock import MockFactory
 
 class MachineBrain:
     """The brain of the machine. It is responsible for the machine's state and behavior."""
+
     instance = None
     event_queue = None
     behavior_mode = None
@@ -41,7 +42,11 @@ class MachineBrain:
 
     def getStatusObject(self):
         """Returns state of the machine in form of a dictionary."""
-        return {"energy": self.energy_level.value, "stress": self.stress_level.value, "emotion": self.emotion.value}
+        return {
+            "energy": self.energy_level.value,
+            "stress": self.stress_level.value,
+            "emotion": self.emotion.value,
+        }
 
     def getStatus(self):
         """Returns state of the machine in form of prompt-compatible text."""
@@ -49,15 +54,15 @@ class MachineBrain:
 
     def play_crown_sound(self):
         """Play the appropriate Crown sound intro based on the energy level."""
-        if (self.energy_level == Energy.EXHAUSTED):
+        if self.energy_level == Energy.EXHAUSTED:
             self.play_audio_file(Path("media/Crown Intro 050 pct.wav"))
-        elif (self.energy_level == Energy.TIRED):
+        elif self.energy_level == Energy.TIRED:
             self.play_audio_file(Path("media/Crown Intro 050 pct.wav"))
-        elif (self.energy_level == Energy.NORMAL):
+        elif self.energy_level == Energy.NORMAL:
             self.play_audio_file(Path("media/Crown Intro.wav"))
-        elif (self.energy_level == Energy.ENERGIZED):
+        elif self.energy_level == Energy.ENERGIZED:
             self.play_audio_file(Path("media/Crown Intro 140 pct.wav"))
-        elif (self.energy_level == Energy.HYPER):
+        elif self.energy_level == Energy.HYPER:
             self.play_audio_file(Path("media/Crown Intro 200 pct.wav"))
         else:
             self.play_audio_file(Path("media/Crown Intro.wav"))
@@ -79,32 +84,28 @@ class MachineBrain:
 
     def advance(self):
         """Advance the machine state by one step based on selected behavior mode."""
-        if (self.behavior_mode == Behavior.CRAZY):
+        if self.behavior_mode == Behavior.CRAZY:
             self.brain_shuffle()
-        elif (self.behavior_mode == Behavior.NORMAL):
+        elif self.behavior_mode == Behavior.NORMAL:
             self.brain_advance()
         else:
             return
 
     def brain_advance(self):
         """Advance the machine brain one step."""
-        self.energy_level = Energy(
-            self.energy_level.value + random.randint(-1, 1))
-        self.stress_level = Stress(
-            self.stress_level.value + random.randint(-1, 1))
-        if (random.randint(0, 9) < 3):  # 30% chance of emotion change
+        self.energy_level = Energy(self.energy_level.value + random.randint(-1, 1))
+        self.stress_level = Stress(self.stress_level.value + random.randint(-1, 1))
+        if random.randint(0, 9) < 3:  # 30% chance of emotion change
             self.emotion = random.choice(list(Emotions))
 
-        logging.debug(
-            f"MB - advanced to {self.getStatus()}")
+        logging.debug(f"MB - advanced to {self.getStatus()}")
 
     def brain_shuffle(self):
         """Shuffle the machine brain and set the machine to a random state."""
         self.energy_level = random.choice(list(Energy))
         self.stress_level = random.choice(list(Stress))
         self.emotion = random.choice(list(Emotions))
-        logging.debug(
-            f"MB - shuffled to {self.getStatus()}")
+        logging.debug(f"MB - shuffled to {self.getStatus()}")
 
     def get_random_line_from_cache(self):
         """Get a random line from the audio cache."""
@@ -113,20 +114,22 @@ class MachineBrain:
             return cache_line
         except Exception as e:
             logging.error(f"FS - Error getting random line from cache: {e}")
-            
 
     def vocalize_text_line(self, text_line):
         if text_line is None:
             return
-        file_name = AudioCache.text_to_hash(text_line)+".wav"
+        file_name = AudioCache.text_to_hash(text_line) + ".wav"
         logging.debug(f"FS - Attempting cached playback of {file_name}.")
         file_path = Path(config.AUDIO_CACHE_FOLDER, file_name)
         if not (file_path.is_file()):
-            logging.warn(
-                f"FS - Cache miss! The file {file_path} doesn't exists.")
-            if (config.LANGUAGE == "Czech"):
+            logging.warn(f"FS - Cache miss! The file {file_path} doesn't exists.")
+            if config.LANGUAGE == "Czech":
                 googletts.download_audio_czech(
-                    text_line, SpeakingRate=googletts.energy_enum_to_speaking_rate(self.energy_level))
+                    text_line,
+                    SpeakingRate=googletts.energy_enum_to_speaking_rate(
+                        self.energy_level
+                    ),
+                )
             else:
                 googletts.download_audio(text_line)
 
@@ -139,35 +142,61 @@ class MachineBrain:
 
     def vocalize_random(self, event=None):
         if self.online:
-            choice = random.randint(0, 2)
+            choice = random.randint(0, 3)
             PG = PromptGenerator()
             self.conversation = Conversation().with_default_messages()
             if choice == 0:
-                self.conversation = (PG.with_get_single_life_anecdote(self.conversation, self.emotion.value,
-                                     96, None, Scenes.CT2023, self.getStatus()))
+                self.conversation = PG.with_get_single_life_anecdote(
+                    self.conversation,
+                    self.emotion.value,
+                    96,
+                    None,
+                    Scenes.CT2023,
+                    self.getStatus(),
+                )
             elif choice == 1:
-                self.conversation = (PG.with_get_single_life_anecdote_with_random_props(self.conversation, self.emotion.value,
-                                                                                        256, None, Scenes.CT2023, self.getStatus()))
+                self.conversation = PG.with_get_single_life_anecdote_with_random_props(
+                    self.conversation,
+                    self.emotion.value,
+                    256,
+                    None,
+                    Scenes.CT2023,
+                    self.getStatus(),
+                )
+            elif choice == 2:
+                self.conversation = PG.with_get_single_life_anecdote(
+                    self.conversation,
+                    self.emotion.value,
+                    256,
+                    None,
+                    Scenes.HOME_LAB,
+                    self.getStatus(),
+                )
             else:
-                self.conversation = (PG.with_get_single_vault_tec_praise(self.conversation, self.emotion.value,
-                                                                         72, None, Scenes.CT2023, self.getStatus()))
+                self.conversation = PG.with_get_single_vault_tec_praise(
+                    self.conversation,
+                    self.emotion.value,
+                    72,
+                    None,
+                    Scenes.CT2023,
+                    self.getStatus(),
+                )
 
             self.conversation = self.conversation.with_message(
-                "user", "You continue in Czech: ")
-            self.conversation = crown_ai.advance_conversation(
-                self.conversation)
+                "user", "You continue in Czech: "
+            )
+            self.conversation = crown_ai.advance_conversation(self.conversation)
 
             memory_text = self.conversation.get_last_assistant_message()
             logging.debug(f"MB - New Text Line: {memory_text}")
-            AudioCache.get_or_create_entry(
-                memory_text, self.getStatusObject(), event)
+            AudioCache.get_or_create_entry(memory_text, self.getStatusObject(), event)
             self.vocalize_text_line(memory_text)
         else:
             self.vocalize_from_cache()
 
     def vocalize_direct(self, text, cache=True, event=None):
         """Vocalize a given line using Google TTS."""
-        if (cache):
+        if cache:
             AudioCache.get_or_create_entry(text, self.getStatusObject(), event)
         self.vocalize_text_line(text)
 
@@ -176,12 +205,14 @@ class MachineBrain:
         cd = datetime.now()
         hours = cd.strftime("%H")
         minutes = cd.strftime("%M")
-        if (config.LANGUAGE == "Czech"):
+        if config.LANGUAGE == "Czech":
             self.vocalize_direct(
-                f"Právě je {hours} hodin a {minutes} minut.", False, event)
+                f"Právě je {hours} hodin a {minutes} minut.", False, event
+            )
         else:
             self.vocalize_direct(
-                f"Current time is {hours} hours and {minutes} minutes.", False, event)
+                f"Current time is {hours} hours and {minutes} minutes.", False, event
+            )
 
     def check_connection_is_online(self):
         """Check if the internet connection is online."""
@@ -192,15 +223,16 @@ class MachineBrain:
             return True
         except requests.HTTPError as e:
             logging.warn(
-                f"CON - Checking internet connection failed, status code {e.response.status_code}")
+                f"CON - Checking internet connection failed, status code {e.response.status_code}"
+            )
         except requests.ConnectionError:
             logging.warn("CON - No internet connection available.")
-        self.stress_level = + 1
+        self.stress_level = +1
         return False
 
     def startup(self):
         """Start the machine and set it to a default state."""
-        if (platform.system() == "Windows"):  # Windows DEV has no real GPIO
+        if platform.system() == "Windows":  # Windows DEV has no real GPIO
             PF = MockFactory()
             # MOCK PIN, see https://gpiozero.readthedocs.io/en/stable/api_pins.html#mock-pins
             self.pir = MotionSensor(4, pin_factory=PF)
@@ -214,7 +246,7 @@ class MachineBrain:
         self.energy_level = Energy.NORMAL
         self.stress_level = Stress.CALM
         self.emotion = Emotions.Nostalgic
-        self.set = Scenes.CT2023
+        self.set = Scenes.HOME_LAB
         if self.online:
             self.startup_online()
         else:
@@ -226,11 +258,19 @@ class MachineBrain:
 
     def startup_offline(self):
         self.play_crown_sound()
-        self.event_queue.add_event(Event(
-            EventTypes.DIRECT_SPEECH, "Hello, I am a vintage Crown gambling machine made by T H Bergmann in 1980."))
+        self.event_queue.add_event(
+            Event(
+                EventTypes.DIRECT_SPEECH,
+                "Hello, I am a vintage Crown gambling machine made by T H Bergmann in 1980.",
+            )
+        )
         self.event_queue.add_event(Event(EventTypes.MACHINE_SLEEP, 3))
-        self.event_queue.add_event(Event(
-            EventTypes.DIRECT_SPEECH, "I have been found, claimed and repaired by a mysterious hacker who saved me from 30 years stuck with a flat hoarder."))
+        self.event_queue.add_event(
+            Event(
+                EventTypes.DIRECT_SPEECH,
+                "I have been found, claimed and repaired by a mysterious hacker who saved me from 30 years stuck with a flat hoarder.",
+            )
+        )
         self.event_queue.add_event(Event(EventTypes.MACHINE_SLEEP, 5))
         self.event_queue.add_event(Event(EventTypes.SAY_TIME))
         self.event_queue.add_event(Event(EventTypes.MACHINE_SLEEP, 10))
@@ -240,19 +280,21 @@ class MachineBrain:
         logging.debug("PIR - Motion detected!")
         self.recent_motion = datetime.now()
         self.wake_up = True
-        if (self.event_queue.has_event_of_type(EventTypes.INPUT_PIR_DETECTED)):
+        if self.event_queue.has_event_of_type(EventTypes.INPUT_PIR_DETECTED):
             logging.debug("PIR - Motion already queued!")
             logging.debug(
-                f"EQ - There are {self.event_queue.events.count()} total events.")
+                f"EQ - There are {self.event_queue.events.count()} total events."
+            )
             return
         else:
             self.event_queue.add_event(Event(EventTypes.INPUT_PIR_DETECTED))
 
     def handle_movement(self, event=None):
         """Handle movement event from the EQ."""
-        if ((datetime.now() - self.recent_motion).total_seconds() < 60):
-            self.event_queue.add_event(Event(
-                EventTypes.DIRECT_SPEECH, "Ah! Movement in infrared spectrum!"))
+        if (datetime.now() - self.recent_motion).total_seconds() < 60:
+            self.event_queue.add_event(
+                Event(EventTypes.DIRECT_SPEECH, "Ah! Movement in infrared spectrum!")
+            )
 
     def sleep(self, seconds=20):
         """Let the machine sleep for a given number of seconds."""
@@ -290,22 +332,20 @@ class MachineBrain:
         elif type == EventTypes.INPUT_PIR_DETECTED:
             self.handle_movement(event)
         elif type == EventTypes.MACHINE_IDLE:
-            if (config.LEARNING):
-                choice = random.randint(0, 2)
-                if (choice == 0):
-                    self.event_queue.add_event(
-                        Event(EventTypes.SAY_RANDOM))
-                elif (choice == 1):
-                    self.event_queue.add_event(
-                        Event(EventTypes.SAY_TIME))
-                elif (choice == 2):
+            if config.LEARNING:
+                choice = random.randint(0, 1)
+                if choice == 0:
+                    self.event_queue.add_event(Event(EventTypes.SAY_RANDOM))
+                elif choice == 1:
+                    self.event_queue.add_event(Event(EventTypes.SAY_TIME))
+                elif choice == 2:
                     self.vocalize_from_cache()
-                elif (choice == 3):
-                    self.event_queue.add_event(
-                        Event(EventTypes.INPUT_PIR_DETECTED))
+                elif choice == 3:
+                    self.event_queue.add_event(Event(EventTypes.INPUT_PIR_DETECTED))
             else:
                 self.vocalize_from_cache()
             self.event_queue.add_event(
-                Event(EventTypes.MACHINE_SLEEP, random.randint(1, 2)))
+                Event(EventTypes.MACHINE_SLEEP, random.randint(1, 2))
+            )
         else:
             logging.debug(f"Unknown event: {event}")
