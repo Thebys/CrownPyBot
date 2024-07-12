@@ -34,7 +34,7 @@ class Conversation:
             context = Context
 
         if Scene is None:
-            scene = Scenes.CT2023.value
+            scene = Scenes.HOME_LAB.value
         else:
             scene = Scene.value
 
@@ -83,8 +83,7 @@ class Conversation:
     def refresh_token_length(self, messages=None):
         if messages is None:
             messages = self.messages
-        encoding = tiktoken.get_encoding("cl100k_base")
-        encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
+        encoding = tiktoken.encoding_for_model("gpt-4o")
         self.token_length = 0
         messages_string = ''
         for message in messages:

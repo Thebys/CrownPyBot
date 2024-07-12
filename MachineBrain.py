@@ -116,6 +116,8 @@ class MachineBrain:
             
 
     def vocalize_text_line(self, text_line):
+        if text_line is None:
+            return
         file_name = AudioCache.text_to_hash(text_line)+".wav"
         logging.debug(f"FS - Attempting cached playback of {file_name}.")
         file_path = Path(config.AUDIO_CACHE_FOLDER, file_name)
@@ -304,6 +306,6 @@ class MachineBrain:
             else:
                 self.vocalize_from_cache()
             self.event_queue.add_event(
-                Event(EventTypes.MACHINE_SLEEP, random.randint(10, 180)))
+                Event(EventTypes.MACHINE_SLEEP, random.randint(1, 2)))
         else:
             logging.debug(f"Unknown event: {event}")

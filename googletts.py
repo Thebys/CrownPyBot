@@ -40,10 +40,13 @@ def download_audio(Prompt, LangCode="de-DE", VoiceName="de-DE-Wavenet-E", Pitch=
     file_name = AudioCache.text_to_hash(Prompt) + ".wav"
     file_path = Path(config.AUDIO_CACHE_FOLDER, file_name).resolve()
 
-    with open(file_path, "wb") as out:
-        # Write the response to the output file.
-        out.write(response.audio_content)
+    try:
+        with open(file_path, "wb") as out:
+            # Write the response to the output file.
+            out.write(response.audio_content)
         logging.debug(f"FS - Saved audio file: {file_path}.")
+    except:
+        logging.error(f"FS - Error saving audio file: {file_path}.")
 
 def download_audio_czech(Prompt, LangCode="cs-CZ", VoiceName="cs-CZ-Wavenet-A", Pitch=-18, SpeakingRate=0.85):
     """Download audio file from Google TTS API and cache it."""
