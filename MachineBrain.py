@@ -10,7 +10,7 @@ import crown_ai
 import platform
 import googletts
 import time
-from promptgenerator import PromptGenerator
+from PromptGenerator import PromptGenerator
 from conversation import Conversation
 from props.scenes import Scenes
 from states.emotions import Emotions
@@ -108,8 +108,12 @@ class MachineBrain:
 
     def get_random_line_from_cache(self):
         """Get a random line from the audio cache."""
-        cache_line = AudioCache.select_random_text(Path(config.DATABASE_FILE))
-        return cache_line
+        try:
+            cache_line = AudioCache.select_random_text(Path(config.DATABASE_FILE))
+            return cache_line
+        except Exception as e:
+            logging.error(f"FS - Error getting random line from cache: {e}")
+            
 
     def vocalize_text_line(self, text_line):
         file_name = AudioCache.text_to_hash(text_line)+".wav"

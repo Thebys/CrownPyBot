@@ -7,17 +7,24 @@ from pathlib import Path
 
 def text_to_hash(text):
     """Generate a 29 character hash from a string.
-        - Used for audio cache file names.
-        - Changing the hash will break the cache."""
-    hash = hashlib.sha256(text.encode()).hexdigest()
-    return hash[:29]
+    - Used for audio cache file names.
+    - Changing the hash will break the cache."""
+    try:
+        hash = hashlib.sha256(text.encode()).hexdigest()
+        return hash[:29]
+    except:
+        return None
 
 
 def select_random_text():
     """Select a random text line from the database file."""
     # Read the data from the database file
-    with open(Path(config.DATABASE_FILE), "r", encoding="utf-8") as f:
-        data = json.load(f)
+    try:
+        with open(Path(config.DATABASE_FILE), "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except:
+        data = []
+        return None
 
     # Select a random text line
     random_index = random.randint(0, len(data) - 1)
@@ -28,6 +35,9 @@ def select_random_text():
 
 def create_entry(text, state=None, event=None):
     """Create a new entry in the database file."""
+    if text is None:
+        return None
+
     hash = text_to_hash(text.strip())
 
     # Read current data from database file
@@ -51,7 +61,7 @@ def create_entry(text, state=None, event=None):
             "text": text,
             "hash": hash,
             "state": state,
-            "event": event
+            "event": event,
         }
     else:
         entry = {
@@ -59,7 +69,7 @@ def create_entry(text, state=None, event=None):
             "text": text,
             "hash": hash,
             "state": state,
-            "event": {"type": event.type.name, "data": event.data}
+            "event": {"type": event.type.name, "data": event.data},
         }
 
     # Append new entry to data
