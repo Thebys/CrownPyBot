@@ -110,7 +110,7 @@ class MachineBrain:
     def get_random_line_from_cache(self):
         """Get a random line from the audio cache."""
         try:
-            cache_line = AudioCache.select_random_text(Path(config.DATABASE_FILE))
+            cache_line = AudioCache.select_random_text()
             return cache_line
         except Exception as e:
             logging.error(f"FS - Error getting random line from cache: {e}")
@@ -193,6 +193,30 @@ class MachineBrain:
             self.vocalize_text_line(memory_text)
         else:
             self.vocalize_from_cache()
+
+    def vocalize_conversation(self, event):
+        """Vocalize latest AI assistant message from conversation."""
+        if event is None:
+            return
+        if (
+            event.type == EventTypes.SAY_HOME_LAB_SMALLTALK
+            and self.set == Scenes.HOME_LAB
+        ):
+            PG = PromptGenerator()
+            self.conversation = Conversation().with_default_messages()
+            self.conversation = PG.with_home_lab_smalltalk(
+                self.conversation, self.emotion.value
+            )
+            self.conversation = crown_ai.advance_conversation(self.conversation)
+            memory_text = self.conversation.get_last_assistant_message()
+            logging.debug(f"MB - New Text Line: {memory_text}")
+            AudioCache.get_or_create_entry(
+                memory_text, self.getStatusObject(), EventTypes.DIRECT_SPEECH
+            )
+            self.vocalize_text_line(memory_text)
+            self.event_queue.add_event(Event(EventTypes.MACHINE_SLEEP, random.randint(1, 2)))
+        else:
+            self.vocalize_random(event)
 
     def vocalize_direct(self, text, cache=True, event=None):
         """Vocalize a given line using Google TTS."""
@@ -329,19 +353,21 @@ class MachineBrain:
             self.vocalize_current_time(event)
         elif type == EventTypes.SAY_RANDOM:
             self.vocalize_random(event)
+        elif type == EventTypes.SAY_HOME_LAB_SMALLTALK:
+            self.vocalize_conversation(event)
         elif type == EventTypes.INPUT_PIR_DETECTED:
             self.handle_movement(event)
         elif type == EventTypes.MACHINE_IDLE:
-            if config.LEARNING:
-                choice = random.randint(0, 1)
+            if config.LEARNING and self.set == Scenes.HOME_LAB:
+                self.event_queue.add_event(Event(EventTypes.SAY_HOME_LAB_SMALLTALK))
+            elif config.LEARNING:
+                choice = random.randint(0, 2)
                 if choice == 0:
                     self.event_queue.add_event(Event(EventTypes.SAY_RANDOM))
                 elif choice == 1:
                     self.event_queue.add_event(Event(EventTypes.SAY_TIME))
                 elif choice == 2:
-                    self.vocalize_from_cache()
-                elif choice == 3:
-                    self.event_queue.add_event(Event(EventTypes.INPUT_PIR_DETECTED))
+                    self.event_queue.add_event(Event(EventTypes.SAY_HOME_LAB_SMALLTALK))
             else:
                 self.vocalize_from_cache()
             self.event_queue.add_event(

@@ -13,7 +13,7 @@ GOOGLE_KEYFILE_PATH = "keyfile.json"
 TG_BOT_TOKEN =  "your_telegram_bot_token_here"
 
 # Database configuration
-DATABASE_FILE = "database/cache.json"
+DATABASE_FILE = "database/database.sqlite"
 
 # Audio cache folder configuration
 AUDIO_CACHE_FOLDER = "audio"

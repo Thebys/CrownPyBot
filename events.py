@@ -16,6 +16,7 @@ class EventTypes(Enum):
     MACHINE_BORED = auto()
     MACHINE_ATTENTION_SEEKING = auto()
     INPUT_PIR_DETECTED = auto()
+    SAY_HOME_LAB_SMALLTALK = auto()
 
     def __str__(self):
         """Return a string representation of the event type, usefull for prompting."""
@@ -39,6 +40,8 @@ class EventTypes(Enum):
             return "The machine says a random memory."
         elif self == EventTypes.SAY_PRAISE_VAULT_TEC:
             return "The machine praises Vault-Tec."
+        elif self == EventTypes.SAY_HOME_LAB_SMALLTALK:
+            return "The machine says a short commentary on the home lab and Tomáš."
         else:
             return "Unknown."
 

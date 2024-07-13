@@ -55,3 +55,9 @@ class PromptGenerator:
         Conversation.with_message(
             "user", f"You greet passer-bys in {Emotion} tone and tell a shorter than {Word_Count} word unexpected and funny Vault-Tek praise.")
         return Conversation
+    
+    def with_home_lab_smalltalk(self, Conversation, Emotion, Word_Count=128, Context=None, Scene=Scenes.HOME_LAB, Status=None) -> 'Conversation':
+        Conversation.with_default_messages(Context, Scene, Status)
+        Conversation.with_message(
+            "user", f"You are chilling with Tomáš in {Emotion} tone and tell a shorter than {Word_Count} unexpected and funny commentary on past, present, future, the mundane and the extraordinary…")
+        return Conversation
