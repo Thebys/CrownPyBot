@@ -210,32 +210,30 @@ class MachineBrain:
             self.conversation = crown_ai.advance_conversation(self.conversation)
             memory_text = self.conversation.get_last_assistant_message()
             logging.debug(f"MB - New Text Line: {memory_text}")
-            AudioCache.get_or_create_entry(
-                memory_text, self.getStatusObject(), EventTypes.DIRECT_SPEECH
-            )
+            AudioCache.get_or_create_entry(memory_text, self.getStatusObject())
             self.vocalize_text_line(memory_text)
-            self.event_queue.add_event(Event(EventTypes.MACHINE_SLEEP, random.randint(1, 2)))
+            self.event_queue.add_event(
+                Event(EventTypes.MACHINE_SLEEP, random.randint(1, 2))
+            )
         else:
             self.vocalize_random(event)
 
-    def vocalize_direct(self, text, cache=True, event=None):
+    def vocalize_direct(self, text, cache=True):
         """Vocalize a given line using Google TTS."""
         if cache:
-            AudioCache.get_or_create_entry(text, self.getStatusObject(), event)
+            AudioCache.get_or_create_entry(text, self.getStatusObject())
         self.vocalize_text_line(text)
 
-    def vocalize_current_time(self, event=None):
+    def vocalize_current_time(self):
         """Vocalize the current time."""
         cd = datetime.now()
         hours = cd.strftime("%H")
         minutes = cd.strftime("%M")
         if config.LANGUAGE == "Czech":
-            self.vocalize_direct(
-                f"Právě je {hours} hodin a {minutes} minut.", False, event
-            )
+            self.vocalize_direct(f"Právě je {hours} hodin a {minutes} minut.", False)
         else:
             self.vocalize_direct(
-                f"Current time is {hours} hours and {minutes} minutes.", False, event
+                f"Current time is {hours} hours and {minutes} minutes.", False
             )
 
     def check_connection_is_online(self):
@@ -278,8 +276,7 @@ class MachineBrain:
 
     def startup_online(self):
         self.play_crown_sound()
-        self.event_queue.add_event(Event(EventTypes.MACHINE_SLEEP, 5))
-
+        self.event_queue.add_event(Event(EventTypes.MACHINE_SLEEP, 1))
     def startup_offline(self):
         self.play_crown_sound()
         self.event_queue.add_event(
@@ -359,7 +356,9 @@ class MachineBrain:
             self.handle_movement(event)
         elif type == EventTypes.MACHINE_IDLE:
             if config.LEARNING and self.set == Scenes.HOME_LAB:
-                self.event_queue.add_event(Event(EventTypes.SAY_HOME_LAB_SMALLTALK))
+                choice = random.randint(0, 1)
+                if choice == 0:
+                    self.event_queue.add_event(Event(EventTypes.SAY_HOME_LAB_SMALLTALK))
             elif config.LEARNING:
                 choice = random.randint(0, 2)
                 if choice == 0:

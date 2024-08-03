@@ -6,6 +6,8 @@ import MachineBrain
 from TelegramBot import CrownTelegramBot
 from MachineBrain import MachineBrain
 from events import EventQueue, EventTypes, Event
+from Database import Database
+
 
 
 def main():
@@ -14,6 +16,11 @@ def main():
         logging.basicConfig(filename="CrownPiBot.log", level=logging.DEBUG)
         logging.getLogger().addHandler(logging.StreamHandler())
     logging.debug("PC - Setup started.")
+
+    # Check / Init SQliteDB
+    db = Database()
+    db.check_or_init_db()
+    db.check_or_init_tables()
 
     # Create Crown <> TG communication queue
     queue = multiprocessing.Queue()

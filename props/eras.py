@@ -16,6 +16,7 @@ class Eras(Enum):
     YEAR_2014 = "The year 2014."
     YEAR_2019 = "The year 2019."
     YEAR_2023 = "The year 2023."
+    YEAR_2024 = "The year 2024."
     THE_PRESENT = "The present."
     THE_FUTURE = "The future."
 

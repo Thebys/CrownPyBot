@@ -1,5 +1,5 @@
 from enum import Enum
-
+import random
 
 class Characters(Enum):
     """"An enumeration of characters available for use in the prompt generator."""

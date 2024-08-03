@@ -4,7 +4,7 @@ import random
 
 class Locations(Enum):
     """An enumeration of locations available for use in the prompt generator."""
-    THE_HOARDERS_FLAT = "The cursed hoarders flat I was stuck in for 30 years since 1993."
+    THE_HOARDERS_FLAT = "The cursed hoarders flat on Zahradníkova street in Brno where I was stuck in for 30 years since 1993."
     THE_GARAGE = "The garage."
     THE_BACKYARD = "The backyard."
     THE_STORE = "The store."
