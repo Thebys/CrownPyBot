@@ -11,6 +11,21 @@
             "program": "${workspaceFolder}/main.py",
             "console": "integratedTerminal",
             "justMyCode": true
+        },
+        {
+            "name": "CrownPyBot Scalene Profiling Start",
+            "type": "python",
+            "request": "launch",
+            "module": "scalene",
+            "args": [
+                "--off-by-default",
+                "--profile-interval", "10",
+                "--no-mp",
+                "${workspaceFolder}/main.py"                
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "pythonArgs": ["-Xfrozen_modules=off"]
         }
     ]
 }

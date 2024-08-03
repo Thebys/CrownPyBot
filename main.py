@@ -3,16 +3,17 @@ import time
 import config
 import multiprocessing
 import MachineBrain
+import scalene
 from TelegramBot import CrownTelegramBot
 from MachineBrain import MachineBrain
 from events import EventQueue, EventTypes, Event
 from Database import Database
 
 
-
 def main():
     """Main entry point of the program. Imagine setup() and loop() in Arduino."""
     if (config.DEVELOPMENT):
+        scalene.start()
         logging.basicConfig(filename="CrownPiBot.log", level=logging.DEBUG)
         logging.getLogger().addHandler(logging.StreamHandler())
     logging.debug("PC - Setup started.")
