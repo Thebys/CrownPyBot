@@ -8,7 +8,7 @@ A talking machine project based on a vintage 1980 Th. Bergmann Automatenbau Crow
 - Up to date Raspbian OS installed
 - Python 3
 - Git
-- An API key for OpenAI GPT-3 API
+- An API key for OpenAI API
 - "Credentials" for Google Text-to-Speech API
 
 ## Setup
@@ -39,13 +39,6 @@ A talking machine project based on a vintage 1980 Th. Bergmann Automatenbau Crow
 
 ## Roadmap / Tech tree
 
-### OG Hardware
-
-- Connect Parasite to original audio amplifier [WIP]
-- Original / parasite mode switch / awareness
-- Read Munzspeicher and Sonderspiele
-- Read and handle original buttons
-
 ### New Hardware
 
 - Add PIR Sensor [WIP]
@@ -54,9 +47,36 @@ A talking machine project based on a vintage 1980 Th. Bergmann Automatenbau Crow
 - Add LEDs, display or terminal
 
 ### CrownPyBot RPi Project
-
-- Add Telegram bot [WIP]
+- Change JSON to SQLite[✔️]
+- Change OG Completions model to chat based GPT-4o [✔️]
 - Develop entertaining self propelled machine loop [WIP]
+- Add Telegram bot [WIP]
 - Extend story telling capabilities
 - Extend audio / scenario / content / props ...
 - Web interface, weather, location, ...?
+
+
+
+# Machine Hardware Description and Control Plan
+
+## Components Overview
+
+1. **220V Motors (3x)**:
+   - **Function**: Spin the wheels.
+   - **Control**: Relays controlled by ESP32.
+
+2. **Spinning Wheel Photoresistors (3x)**:
+   - **Function**: Detect the status of the spinning wheels.
+   - **Control**: Analog inputs on ESP32.
+
+3. **7-Segment Displays (3x LEFT, 4x RIGHT)**:
+   - **Function**: Display numbers.
+   - **Control**: Multiplexed control using GPIOs on ESP32, possibly using a 7-segment driver IC like MAX7219 for simplicity.
+
+4. **Bulbs/LEDs (10x LEFT, 10x RIGHT, 8x Central, SUPERCHANCE, SONDERSPIELE, Coin Entry)**:
+   - **Function**: Indicate various statuses and game phases.
+   - **Control**: GPIOs on ESP32.
+
+5. **Buttons (Risiko LEFT/RIGHT, START, STOP Center/Right, Pay Winning)**:
+   - **Function**: User input.
+   - **Control**: GPIOs on ESP32, with debouncing in software(?).
