@@ -61,9 +61,9 @@ A talking machine project based on a vintage 1980 Th. Bergmann Automatenbau Crow
 
 ## Components Overview
 
-1. **220V Motors (3x)**:
+1. **220V Motor**:
    - **Function**: Spin the wheels.
-   - **Control**: Relays controlled by ESP32.
+   - **Control**: 3x autobrakes (to be controlled by ESP32).
 
 2. **Spinning Wheel Photoresistors (3x)**:
    - **Function**: Detect the status of the spinning wheels.
@@ -80,3 +80,45 @@ A talking machine project based on a vintage 1980 Th. Bergmann Automatenbau Crow
 5. **Buttons (Risiko LEFT/RIGHT, START, STOP Center/Right, Pay Winning)**:
    - **Function**: User input.
    - **Control**: GPIOs on ESP32, with debouncing in software(?).
+
+
+# Power Considerations
+
+1. **WheelsMotor**:
+   - **Voltage**: 220V (via individual transformer)
+   - **Control**: Relay control
+
+2. **LEDs**:
+   - **Voltage**: 24V
+   - **Power**: 2W each (Total: ~100W, rarely fully lit)
+   - **Current**: ~4.2A
+
+3. **Sound System**:
+   - **Power**: ~50W
+
+4. **Raspberry Pi 5**:
+   - **Voltage**: 5V
+   - **Current**: 5A
+
+5. **ESP32**:
+   - **Voltage**: 3.3V
+   - **Current**: 0.5A
+
+6. **Mobile Broadband Modem** (Optional):
+   - **Voltage**: 5V
+   - **Current**: 1A
+
+### Power Budget
+
+1. **24V Rail**:
+   - LEDs: ~100W (4.2A)
+   - Sound System: Up to 60W (2.5A)(Perhaps would be better on 12V rail?)
+   - **Total**: ~160W (6.7A)
+
+2. **5V Rail**:
+   - Raspberry Pi: 25W (5A)
+   - Mobile Modem: 5W (1A)
+   - **Total**: 30W (6A)
+
+3. **3.3V Rail**:
+   - ESP32: 1.65W (0.5A)
